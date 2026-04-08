@@ -75,6 +75,7 @@ export function FormShell() {
   const [reviewing, setReviewing] = useState(false);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [findings, setFindings] = useState<ReviewFinding[]>([]);
+  const [highlightedSection, setHighlightedSection] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -112,6 +113,7 @@ export function FormShell() {
     setOpenSections(new Set(['1']));
     setFindings([]);
     setReviewOpen(false);
+    setHighlightedSection(null);
   };
 
   const handleSave = async () => {
@@ -213,6 +215,81 @@ export function FormShell() {
     });
   };
 
+  // Map AI finding section names to form section keys
+  const sectionNameToKey = (sectionName: string): string | null => {
+    const lower = sectionName.toLowerCase();
+    const map: Record<string, string> = {
+      'name': '1', 'residence': '1', 'personal': '1', 'ssn': '1', 'address': '1',
+      'prior bankruptcy': '2', 'bankruptcy': '2',
+      'occupation': '3', 'income': '3', 'employment': '3',
+      'business': '4',
+      'financial': '5', 'welfare': '5', 'ira': '5', 'retirement': '5', 'trust': '5', 'inheritance': '5',
+      'tax': '6', 'refund': '6',
+      'debt': '7', 'repaid': '7', 'student loan': '7', 'insider': '7', 'preference': '7', 'payment': '7',
+      'suit': '8', 'legal': '8', 'lawsuit': '8', 'criminal': '8',
+      'foreclosure': '9', 'garnish': '9',
+      'repossess': '10',
+      'property held by': '11',
+      'gift': '12', 'transfer': '12',
+      'loss': '13', 'fire': '13', 'theft': '13', 'gambling': '13',
+      'attorney': '14', 'consultant': '14', 'counseling': '14',
+      'closed': '15', 'bank account': '15',
+      'safe deposit': '16',
+      'property held for': '17', 'property for other': '17',
+      'lease': '18', 'cooperative': '18',
+      'alimony': '19', 'child support': '19', 'marriage': '19',
+      'accident': '20', 'driver': '20',
+      'cosign': '21',
+      'credit card': '22', 'cash advance': '22', 'credit': '22', 'finance': '22', 'payday': '22',
+      'eviction': '23', 'landlord': '23',
+      'secured debt': '24', 'secured': '24',
+      'unsecured': '25', 'creditor': '25',
+      'asset': '26', 'cash on hand': '26', 'property': '26', 'household': '26',
+      'vehicle': '27', 'car': '27', 'auto': '27',
+    };
+    for (const [keyword, key] of Object.entries(map)) {
+      if (lower.includes(keyword)) return key;
+    }
+    // Also check the finding message for clues
+    return null;
+  };
+
+  // Get section keys that have findings (for highlighting)
+  const sectionFindingSeverity = (key: string): 'error' | 'warning' | 'info' | null => {
+    let worst: 'error' | 'warning' | 'info' | null = null;
+    for (const f of findings) {
+      const mappedKey = sectionNameToKey(f.section) || sectionNameToKey(f.message);
+      if (mappedKey === key) {
+        if (f.severity === 'error') return 'error';
+        if (f.severity === 'warning') worst = worst === 'error' ? 'error' : 'warning';
+        if (f.severity === 'info' && !worst) worst = 'info';
+      }
+    }
+    return worst;
+  };
+
+  const handleFindingClick = (finding: ReviewFinding) => {
+    const key = sectionNameToKey(finding.section) || sectionNameToKey(finding.message);
+    if (key) {
+      // Open the section
+      setOpenSections((prev) => {
+        const next = new Set(prev);
+        next.add(key);
+        return next;
+      });
+      // Highlight and scroll
+      setHighlightedSection(key);
+      setTimeout(() => {
+        const el = document.getElementById(`section-${key}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      // Clear highlight after a few seconds
+      setTimeout(() => setHighlightedSection(null), 3000);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
@@ -252,8 +329,25 @@ export function FormShell() {
         <div className="space-y-2">
           {sections.map(({ key, title, Component }) => {
             const isOpen = openSections.has(key);
+            const severity = sectionFindingSeverity(key);
+            const isHighlighted = highlightedSection === key;
+            const severityBorder = severity === 'error'
+              ? 'border-red-400 border-2'
+              : severity === 'warning'
+              ? 'border-amber-400 border-2'
+              : severity === 'info'
+              ? 'border-blue-400 border-2'
+              : 'border';
+            const highlightClass = isHighlighted ? 'ring-2 ring-offset-2 ring-primary transition-all' : '';
+            const severityDot = severity === 'error'
+              ? 'bg-red-500'
+              : severity === 'warning'
+              ? 'bg-amber-500'
+              : severity === 'info'
+              ? 'bg-blue-500'
+              : '';
             return (
-              <div key={key} className="border rounded-lg">
+              <div key={key} id={`section-${key}`} className={`rounded-lg ${severityBorder} ${highlightClass}`}>
                 <button
                   className="w-full flex items-center gap-2 px-4 py-3 text-left font-medium hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => toggleSection(key)}
@@ -264,6 +358,9 @@ export function FormShell() {
                     <ChevronRight className="h-4 w-4 shrink-0" />
                   )}
                   {title}
+                  {severity && (
+                    <span className={`ml-auto h-2.5 w-2.5 rounded-full ${severityDot} shrink-0`} />
+                  )}
                 </button>
                 {isOpen && (
                   <div className="px-4 pb-4">
@@ -281,7 +378,8 @@ export function FormShell() {
         <ReviewPanel
           findings={findings}
           loading={reviewing}
-          onClose={() => setReviewOpen(false)}
+          onClose={() => { setReviewOpen(false); setHighlightedSection(null); }}
+          onFindingClick={handleFindingClick}
         />
       )}
 

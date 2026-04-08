@@ -1,11 +1,12 @@
 import type { ReviewFinding } from '@/api/client';
 import { Button } from './ui/button';
-import { X, AlertTriangle, AlertCircle, Info } from 'lucide-react';
+import { X, AlertTriangle, AlertCircle, Info, ArrowRight } from 'lucide-react';
 
 interface ReviewPanelProps {
   findings: ReviewFinding[];
   loading: boolean;
   onClose: () => void;
+  onFindingClick: (finding: ReviewFinding) => void;
 }
 
 const severityConfig = {
@@ -14,7 +15,7 @@ const severityConfig = {
   info: { icon: Info, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200', label: 'Info' },
 };
 
-export function ReviewPanel({ findings, loading, onClose }: ReviewPanelProps) {
+export function ReviewPanel({ findings, loading, onClose, onFindingClick }: ReviewPanelProps) {
   return (
     <div className="fixed inset-y-0 right-0 w-[420px] bg-background border-l shadow-lg z-50 flex flex-col">
       <div className="flex items-center justify-between p-4 border-b">
@@ -38,25 +39,33 @@ export function ReviewPanel({ findings, loading, onClose }: ReviewPanelProps) {
             const config = severityConfig[f.severity];
             const Icon = config.icon;
             return (
-              <div key={i} className={`rounded-md border p-3 ${config.bg}`}>
+              <button
+                key={i}
+                className={`w-full text-left rounded-md border p-3 ${config.bg} hover:opacity-80 transition-opacity cursor-pointer`}
+                onClick={() => onFindingClick(f)}
+              >
                 <div className="flex items-start gap-2">
                   <Icon className={`h-5 w-5 mt-0.5 shrink-0 ${config.color}`} />
-                  <div>
+                  <div className="flex-1">
                     <div className={`text-xs font-semibold uppercase ${config.color}`}>
                       {config.label} — {f.section}
                     </div>
                     <p className="text-sm mt-1">{f.message}</p>
                   </div>
+                  <ArrowRight className={`h-4 w-4 mt-0.5 shrink-0 ${config.color} opacity-50`} />
                 </div>
-              </div>
+              </button>
             );
           })}
       </div>
       {!loading && findings.length > 0 && (
-        <div className="p-4 border-t text-sm text-muted-foreground">
-          {findings.filter((f) => f.severity === 'error').length} errors,{' '}
-          {findings.filter((f) => f.severity === 'warning').length} warnings,{' '}
-          {findings.filter((f) => f.severity === 'info').length} info
+        <div className="p-4 border-t">
+          <div className="text-sm text-muted-foreground">
+            {findings.filter((f) => f.severity === 'error').length} errors,{' '}
+            {findings.filter((f) => f.severity === 'warning').length} warnings,{' '}
+            {findings.filter((f) => f.severity === 'info').length} info
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Click a finding to jump to that section</p>
         </div>
       )}
     </div>
