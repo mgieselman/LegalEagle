@@ -9,7 +9,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   define: {
     __APP_VERSION__: JSON.stringify(APP_VERSION),
-    __BUILD_TIME__: JSON.stringify(new Date().toLocaleString()),
+    __BUILD_TIME__: JSON.stringify(new Date().toLocaleString('en-US', { timeZone: 'America/Los_Angeles', dateStyle: 'medium', timeStyle: 'short' }) + ' PST'),
   },
   resolve: {
     alias: {
