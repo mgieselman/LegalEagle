@@ -5,7 +5,7 @@ import { ReviewPanel } from './ReviewPanel';
 import { api, type FormSummary, type ReviewFinding } from '@/api/client';
 import type { QuestionnaireData } from '@/types/questionnaire';
 import { createEmptyQuestionnaire } from '@/types/questionnaire';
-import { ChevronDown, ChevronRight, Plus, Save, Search } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Save, Search, Download } from 'lucide-react';
 
 import { Section1NameResidence } from './form-sections/Section1NameResidence';
 import { Section2PriorBankruptcy } from './form-sections/Section2PriorBankruptcy';
@@ -134,6 +134,21 @@ export function FormShell() {
     }
   };
 
+  const handleDownload = async () => {
+    if (!currentFormId) {
+      showToast('Save the form first before downloading');
+      return;
+    }
+    // Save latest data before downloading
+    try {
+      const name = data.fullName || formName || 'Untitled';
+      await api.updateForm(currentFormId, name, data as unknown as Record<string, unknown>);
+    } catch {
+      // continue with download anyway
+    }
+    api.downloadForm(currentFormId);
+  };
+
   const handleReview = async () => {
     if (!currentFormId) {
       // Save first
@@ -222,6 +237,9 @@ export function FormShell() {
           <div className="flex-1" />
           <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="gap-1">
             <Save className="h-4 w-4" /> {saving ? 'Saving...' : 'Save'}
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleDownload} disabled={!currentFormId} className="gap-1">
+            <Download className="h-4 w-4" /> Download
           </Button>
           <Button size="sm" onClick={handleReview} disabled={reviewing} className="gap-1">
             <Search className="h-4 w-4" /> {reviewing ? 'Reviewing...' : 'Review'}

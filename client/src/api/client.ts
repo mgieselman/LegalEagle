@@ -54,4 +54,8 @@ export const api = {
 
   reviewForm: (id: string) =>
     request<{ findings: ReviewFinding[] }>(`/forms/${id}/review`, { method: 'POST' }),
+
+  downloadForm: (id: string) => {
+    window.open(`${BASE}/forms/${id}/download`, '_blank');
+  },
 };
