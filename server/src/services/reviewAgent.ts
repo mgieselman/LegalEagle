@@ -1,7 +1,17 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { QuestionnaireData } from '../types/questionnaire';
 
-const client = new Anthropic();
+let _client: Anthropic | null = null;
+function getClient(): Anthropic {
+  if (!_client) {
+    const key = process.env.ANTHROPIC_API_KEY;
+    if (!key) {
+      throw new Error('ANTHROPIC_API_KEY not set in environment. Check .env file.');
+    }
+    _client = new Anthropic({ apiKey: key });
+  }
+  return _client;
+}
 
 export interface ReviewFinding {
   severity: 'error' | 'warning' | 'info';
@@ -63,8 +73,8 @@ If the form is mostly empty, note that as an info finding but still check whatev
 Return ONLY the JSON array, no other text.`;
 
 export async function reviewForm(data: QuestionnaireData): Promise<ReviewFinding[]> {
-  const message = await client.messages.create({
-    model: 'claude-sonnet-4-6-20250514',
+  const message = await getClient().messages.create({
+    model: 'claude-sonnet-4-20250514',
     max_tokens: 4096,
     system: SYSTEM_PROMPT,
     messages: [

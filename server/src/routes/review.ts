@@ -17,8 +17,8 @@ router.post('/:id/review', async (req: Request, res: Response) => {
     const findings = await reviewForm(formData);
     res.json({ findings });
   } catch (err) {
-    console.error('Review error:', err);
-    res.status(500).json({ error: 'Review failed' });
+    console.error('Review error:', err instanceof Error ? err.message : err);
+    res.status(500).json({ error: 'Review failed', details: err instanceof Error ? err.message : String(err) });
   }
 });
 

@@ -1,11 +1,9 @@
+import './env';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import dotenv from 'dotenv';
 import formsRouter from './routes/forms';
 import reviewRouter from './routes/review';
-
-dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
