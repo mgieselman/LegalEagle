@@ -35,12 +35,12 @@ export function YesNoField({ label, value, onChange, className }: YesNoFieldProp
   return (
     <div className={`flex items-center gap-4 ${className || ''}`}>
       <span className="text-sm font-medium">{label}</span>
-      <label className="flex items-center gap-1 cursor-pointer">
-        <input type="radio" name={label} checked={value === 'yes'} onChange={() => onChange('yes')} className="accent-primary" />
+      <label className="flex items-center gap-2 cursor-pointer py-1 px-1">
+        <input type="radio" name={label} checked={value === 'yes'} onChange={() => onChange('yes')} className="accent-primary h-4 w-4" />
         <span className="text-sm">Yes</span>
       </label>
-      <label className="flex items-center gap-1 cursor-pointer">
-        <input type="radio" name={label} checked={value === 'no'} onChange={() => onChange('no')} className="accent-primary" />
+      <label className="flex items-center gap-2 cursor-pointer py-1 px-1">
+        <input type="radio" name={label} checked={value === 'no'} onChange={() => onChange('no')} className="accent-primary h-4 w-4" />
         <span className="text-sm">No</span>
       </label>
     </div>
@@ -63,7 +63,7 @@ export function TextAreaField({ label, value, onChange, rows = 2, className }: T
         value={value}
         onChange={(e) => onChange(e.target.value)}
         rows={rows}
-        className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-base md:text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       />
     </div>
   );

@@ -18,12 +18,15 @@ function IncomeRow({
   onChange: (path: string, value: any) => void;
 }) {
   return (
-    <div className="grid grid-cols-5 gap-2 items-end">
-      <span className="text-sm font-medium self-center">{label}</span>
-      <FormField label="Your Amount" value={entry.youAmount} onChange={(v) => onChange(`${prefix}.youAmount`, v)} placeholder="$" />
-      <FormField label="Your Source" value={entry.youSource} onChange={(v) => onChange(`${prefix}.youSource`, v)} />
-      <FormField label="Spouse Amount" value={entry.spouseAmount} onChange={(v) => onChange(`${prefix}.spouseAmount`, v)} placeholder="$" />
-      <FormField label="Spouse Source" value={entry.spouseSource} onChange={(v) => onChange(`${prefix}.spouseSource`, v)} />
+    <div className="space-y-2">
+      <span className="text-sm font-medium md:hidden">{label}</span>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 items-end">
+        <span className="text-sm font-medium self-center hidden md:block">{label}</span>
+        <FormField label="Your Amount" value={entry.youAmount} onChange={(v) => onChange(`${prefix}.youAmount`, v)} placeholder="$" />
+        <FormField label="Your Source" value={entry.youSource} onChange={(v) => onChange(`${prefix}.youSource`, v)} />
+        <FormField label="Spouse Amount" value={entry.spouseAmount} onChange={(v) => onChange(`${prefix}.spouseAmount`, v)} placeholder="$" />
+        <FormField label="Spouse Source" value={entry.spouseSource} onChange={(v) => onChange(`${prefix}.spouseSource`, v)} />
+      </div>
     </div>
   );
 }

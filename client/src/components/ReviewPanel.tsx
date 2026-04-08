@@ -26,7 +26,7 @@ export function ReviewPanel({ findings, loading, collapsed, onToggle, onFindingC
     return (
       <button
         onClick={onToggle}
-        className="fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-background border border-r-0 rounded-l-lg shadow-lg px-2 py-4 flex flex-col items-center gap-2 hover:bg-muted/50 transition-colors cursor-pointer"
+        className="fixed right-0 top-1/2 -translate-y-1/2 z-50 bg-background border border-r-0 rounded-l-lg shadow-lg px-3 py-5 md:px-2 md:py-4 flex flex-col items-center gap-2 hover:bg-muted/50 transition-colors cursor-pointer"
       >
         <PanelRightOpen className="h-4 w-4 text-muted-foreground" />
         <span className="text-xs font-medium [writing-mode:vertical-lr] rotate-180">Review</span>
@@ -43,7 +43,7 @@ export function ReviewPanel({ findings, loading, collapsed, onToggle, onFindingC
 
   // Expanded panel
   return (
-    <div className="fixed inset-y-0 right-0 w-[420px] bg-background border-l shadow-lg z-50 flex flex-col transition-transform">
+    <div className="fixed inset-0 md:inset-y-0 md:left-auto md:right-0 md:w-[420px] bg-background border-l shadow-lg z-50 flex flex-col transition-transform">
       <div className="flex items-center justify-between p-4 border-b">
         <h2 className="text-lg font-semibold">AI Review Results</h2>
         <Button variant="ghost" size="icon" onClick={onToggle} title="Collapse panel">

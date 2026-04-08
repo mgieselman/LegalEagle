@@ -5,7 +5,7 @@ import { ReviewPanel } from './ReviewPanel';
 import { api, type FormSummary, type ReviewFinding } from '@/api/client';
 import type { QuestionnaireData } from '@/types/questionnaire';
 import { createEmptyQuestionnaire } from '@/types/questionnaire';
-import { ChevronDown, ChevronRight, Plus, Save, Search, Download } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, Save, Search, Download, Menu, X } from 'lucide-react';
 
 import { Section1NameResidence } from './form-sections/Section1NameResidence';
 import { Section2PriorBankruptcy } from './form-sections/Section2PriorBankruptcy';
@@ -78,6 +78,7 @@ export function FormShell() {
   const [findings, setFindings] = useState<ReviewFinding[]>([]);
   const [highlightedSection, setHighlightedSection] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -297,42 +298,83 @@ export function FormShell() {
     }
   };
 
+  const formOptions = formList.map((f) => (
+    <option key={f.id} value={f.id}>
+      {f.name} ({new Date(f.updated_at).toLocaleDateString()})
+    </option>
+  ));
+
+  const withMenuClose = (fn: () => void) => () => { fn(); setMobileMenuOpen(false); };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
       <div className="sticky top-0 z-40 bg-background border-b shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3 flex-wrap">
-          <h1 className="text-lg font-bold mr-2">Bankruptcy Questionnaire</h1>
-          <Select
-            value={currentFormId || ''}
-            onChange={(e) => handleSelectForm(e.target.value)}
-            className="w-56"
-          >
-            <option value="">Select a form...</option>
-            {formList.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.name} ({new Date(f.updated_at).toLocaleDateString()})
-              </option>
-            ))}
-          </Select>
-          <Button variant="outline" size="sm" onClick={handleNewForm} className="gap-1">
-            <Plus className="h-4 w-4" /> New Form
-          </Button>
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
+          <h1 className="text-lg font-bold mr-2 truncate">Bankruptcy Questionnaire</h1>
           <div className="flex-1" />
-          <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="gap-1">
-            <Save className="h-4 w-4" /> {saving ? 'Saving...' : 'Save'}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleDownload} disabled={!currentFormId} className="gap-1">
-            <Download className="h-4 w-4" /> Download
-          </Button>
-          <Button size="sm" onClick={handleReview} disabled={reviewing} className="gap-1">
-            <Search className="h-4 w-4" /> {reviewing ? 'Reviewing...' : 'Review'}
+          {/* Desktop controls */}
+          <div className="hidden md:flex items-center gap-3">
+            <Select
+              value={currentFormId || ''}
+              onChange={(e) => handleSelectForm(e.target.value)}
+              className="w-56"
+            >
+              <option value="">Select a form...</option>
+              {formOptions}
+            </Select>
+            <Button variant="outline" size="sm" onClick={handleNewForm} className="gap-1">
+              <Plus className="h-4 w-4" /> New Form
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="gap-1">
+              <Save className="h-4 w-4" /> {saving ? 'Saving...' : 'Save'}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDownload} disabled={!currentFormId} className="gap-1">
+              <Download className="h-4 w-4" /> Download
+            </Button>
+            <Button size="sm" onClick={handleReview} disabled={reviewing} className="gap-1">
+              <Search className="h-4 w-4" /> {reviewing ? 'Reviewing...' : 'Review'}
+            </Button>
+          </div>
+          {/* Mobile hamburger */}
+          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen((o) => !o)}>
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </Button>
         </div>
+        {/* Mobile dropdown menu */}
+        {mobileMenuOpen && (
+          <>
+          <div className="fixed inset-0 z-30 md:hidden" onClick={() => setMobileMenuOpen(false)} />
+          <div className="md:hidden border-t px-4 py-3 space-y-3 bg-background relative z-40">
+            <Select
+              value={currentFormId || ''}
+              onChange={(e) => { handleSelectForm(e.target.value); setMobileMenuOpen(false); }}
+              className="w-full"
+            >
+              <option value="">Select a form...</option>
+              {formOptions}
+            </Select>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={withMenuClose(handleNewForm)} className="gap-1 flex-1">
+                <Plus className="h-4 w-4" /> New
+              </Button>
+              <Button variant="outline" size="sm" onClick={withMenuClose(handleSave)} disabled={saving} className="gap-1 flex-1">
+                <Save className="h-4 w-4" /> {saving ? 'Saving...' : 'Save'}
+              </Button>
+              <Button variant="outline" size="sm" onClick={withMenuClose(handleDownload)} disabled={!currentFormId} className="gap-1 flex-1">
+                <Download className="h-4 w-4" /> Download
+              </Button>
+            </div>
+            <Button size="sm" onClick={withMenuClose(handleReview)} disabled={reviewing} className="gap-1 w-full">
+              <Search className="h-4 w-4" /> {reviewing ? 'Reviewing...' : 'Review'}
+            </Button>
+          </div>
+          </>
+        )}
       </div>
 
       {/* Form sections */}
-      <div className={`max-w-5xl mx-auto px-4 py-6 ${hasReview && !reviewCollapsed ? 'mr-[420px]' : ''}`}>
+      <div className={`max-w-5xl mx-auto px-4 py-6 ${hasReview && !reviewCollapsed ? 'md:mr-[420px]' : ''}`}>
         <div className="space-y-2">
           {sections.map(({ key, title, Component }) => {
             const isOpen = openSections.has(key);
@@ -392,13 +434,13 @@ export function FormShell() {
       )}
 
       {/* Footer */}
-      <div className={`border-t mt-8 py-3 text-center text-xs text-muted-foreground ${hasReview && !reviewCollapsed ? 'mr-[420px]' : ''}`}>
+      <div className={`border-t mt-8 py-3 text-center text-xs text-muted-foreground ${hasReview && !reviewCollapsed ? 'md:mr-[420px]' : ''}`}>
         LegalEagle v{__APP_VERSION__} &middot; Built {__BUILD_TIME__}
       </div>
 
       {/* Toast */}
       {toast && (
-        <div className="fixed bottom-4 right-4 bg-foreground text-background px-4 py-2 rounded-md shadow-lg text-sm z-50 animate-in fade-in">
+        <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 bg-foreground text-background px-4 py-2 rounded-md shadow-lg text-sm z-[60] animate-in fade-in text-center md:text-left">
           {toast}
         </div>
       )}
