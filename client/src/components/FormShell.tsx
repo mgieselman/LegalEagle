@@ -383,6 +383,11 @@ export function FormShell() {
         />
       )}
 
+      {/* Footer */}
+      <div className={`border-t mt-8 py-3 text-center text-xs text-muted-foreground ${reviewOpen ? 'mr-[420px]' : ''}`}>
+        LegalEagle v{__APP_VERSION__} &middot; Built {__BUILD_TIME__}
+      </div>
+
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-4 right-4 bg-foreground text-background px-4 py-2 rounded-md shadow-lg text-sm z-50 animate-in fade-in">
