@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
-const APP_VERSION = '1.0.1'
+const APP_VERSION = '1.0.2'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],

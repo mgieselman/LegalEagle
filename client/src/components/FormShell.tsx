@@ -73,7 +73,8 @@ export function FormShell() {
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(['1']));
   const [saving, setSaving] = useState(false);
   const [reviewing, setReviewing] = useState(false);
-  const [reviewOpen, setReviewOpen] = useState(false);
+  const [hasReview, setHasReview] = useState(false);
+  const [reviewCollapsed, setReviewCollapsed] = useState(false);
   const [findings, setFindings] = useState<ReviewFinding[]>([]);
   const [highlightedSection, setHighlightedSection] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -101,6 +102,10 @@ export function FormShell() {
       setCurrentFormId(id);
       setData(form.data as unknown as QuestionnaireData);
       setFormName(form.name);
+      setFindings([]);
+      setHasReview(false);
+      setReviewCollapsed(false);
+      setHighlightedSection(null);
     } catch {
       showToast('Failed to load form');
     }
@@ -112,7 +117,8 @@ export function FormShell() {
     setFormName('');
     setOpenSections(new Set(['1']));
     setFindings([]);
-    setReviewOpen(false);
+    setHasReview(false);
+    setReviewCollapsed(false);
     setHighlightedSection(null);
   };
 
@@ -178,7 +184,8 @@ export function FormShell() {
     }
 
     setReviewing(true);
-    setReviewOpen(true);
+    setHasReview(true);
+    setReviewCollapsed(false);
     setFindings([]);
     try {
       const result = await api.reviewForm(currentFormId!);
@@ -325,7 +332,7 @@ export function FormShell() {
       </div>
 
       {/* Form sections */}
-      <div className={`max-w-5xl mx-auto px-4 py-6 ${reviewOpen ? 'mr-[420px]' : ''}`}>
+      <div className={`max-w-5xl mx-auto px-4 py-6 ${hasReview && !reviewCollapsed ? 'mr-[420px]' : ''}`}>
         <div className="space-y-2">
           {sections.map(({ key, title, Component }) => {
             const isOpen = openSections.has(key);
@@ -374,17 +381,18 @@ export function FormShell() {
       </div>
 
       {/* Review panel */}
-      {reviewOpen && (
+      {hasReview && (
         <ReviewPanel
           findings={findings}
           loading={reviewing}
-          onClose={() => { setReviewOpen(false); setHighlightedSection(null); }}
+          collapsed={reviewCollapsed}
+          onToggle={() => { setReviewCollapsed((c) => !c); setHighlightedSection(null); }}
           onFindingClick={handleFindingClick}
         />
       )}
 
       {/* Footer */}
-      <div className={`border-t mt-8 py-3 text-center text-xs text-muted-foreground ${reviewOpen ? 'mr-[420px]' : ''}`}>
+      <div className={`border-t mt-8 py-3 text-center text-xs text-muted-foreground ${hasReview && !reviewCollapsed ? 'mr-[420px]' : ''}`}>
         LegalEagle v{__APP_VERSION__} &middot; Built {__BUILD_TIME__}
       </div>
 
