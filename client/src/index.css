@@ -27,8 +27,9 @@
   --color-success-foreground: #052e16;
 }
 
-body {
+html, body {
   margin: 0;
+  overflow-x: hidden;
   font-family: system-ui, -apple-system, sans-serif;
   background: var(--color-background);
   color: var(--color-foreground);

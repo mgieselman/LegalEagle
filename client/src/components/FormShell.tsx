@@ -307,7 +307,7 @@ export function FormShell() {
   const withMenuClose = (fn: () => void) => () => { fn(); setMobileMenuOpen(false); };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background max-w-full overflow-x-hidden">
       {/* Top bar */}
       <div className="sticky top-0 z-40 bg-background border-b shadow-sm">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center gap-3">
