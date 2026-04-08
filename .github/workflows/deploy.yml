@@ -47,9 +47,14 @@ jobs:
           cd deploy/server && npm ci --omit=dev
           cd ../..
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v2
+      - name: Login to Azure
+        uses: azure/login@v2
         with:
-          app-name: app-legaleagle
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: deploy
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        run: |
+          cd deploy
+          zip -r ../deploy.zip .
+          cd ..
+          az webapp deploy --resource-group rg-legaleagle --name app-legaleagle --src-path deploy.zip --type zip
