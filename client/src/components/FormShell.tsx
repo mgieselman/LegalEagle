@@ -374,7 +374,7 @@ export function FormShell() {
       </div>
 
       {/* Form sections */}
-      <div className={`max-w-5xl mx-auto px-4 py-6 ${hasReview && !reviewCollapsed ? 'md:mr-[420px]' : ''}`}>
+      <div className={`max-w-5xl mx-auto px-4 py-6 w-full box-border ${hasReview && !reviewCollapsed ? 'md:mr-[420px]' : ''}`}>
         <div className="space-y-2">
           {sections.map(({ key, title, Component }) => {
             const isOpen = openSections.has(key);
@@ -396,7 +396,7 @@ export function FormShell() {
               ? 'bg-blue-500'
               : '';
             return (
-              <div key={key} id={`section-${key}`} className={`rounded-lg ${severityBorder} ${highlightClass}`}>
+              <div key={key} id={`section-${key}`} className={`rounded-lg overflow-hidden ${severityBorder} ${highlightClass}`}>
                 <button
                   className="w-full flex items-center gap-2 px-4 py-3 text-left font-medium hover:bg-muted/50 transition-colors cursor-pointer"
                   onClick={() => toggleSection(key)}
