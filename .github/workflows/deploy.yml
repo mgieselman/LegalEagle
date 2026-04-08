@@ -22,6 +22,8 @@ jobs:
 
       - name: Build client
         working-directory: ./client
+        env:
+          VITE_PLAUSIBLE_DOMAIN: app-legaleagle.azurewebsites.net
         run: npm run build
 
       - name: Install server dependencies

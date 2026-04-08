@@ -1,5 +1,23 @@
 # React + TypeScript + Vite
 
+## Plausible Analytics
+
+Plausible support is wired in through Vite environment variables. The script only loads when `VITE_PLAUSIBLE_DOMAIN` is set.
+
+Example values for this deployment:
+
+```bash
+VITE_PLAUSIBLE_DOMAIN=app-legaleagle.azurewebsites.net
+VITE_PLAUSIBLE_SRC=https://plausible.io/js/script.js
+```
+
+Notes:
+
+- Set these in the client build environment used by Azure.
+- `VITE_PLAUSIBLE_SRC` is optional and only needed if you use a custom or proxied Plausible script URL.
+- The current app does not use client-side routing, so the default Plausible pageview tracking is sufficient.
+- Custom Plausible events are emitted for `Form Saved`, `AI Review Run`, and `Form Downloaded`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:
@@ -71,3 +89,4 @@ export default defineConfig([
   },
 ])
 ```
+

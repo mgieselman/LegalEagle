@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { Select } from './ui/select';
 import { ReviewPanel } from './ReviewPanel';
 import { api, type FormSummary, type ReviewFinding } from '@/api/client';
+import { trackPlausibleEvent } from '@/lib/plausible';
 import type { QuestionnaireData } from '@/types/questionnaire';
 import { createEmptyQuestionnaire } from '@/types/questionnaire';
 import { ChevronDown, ChevronRight, Plus, Save, Search, Download, Menu, X } from 'lucide-react';
@@ -129,9 +130,11 @@ export function FormShell() {
       const name = data.fullName || formName || 'Untitled';
       if (currentFormId) {
         await api.updateForm(currentFormId, name, data as unknown as Record<string, unknown>);
+        trackPlausibleEvent('Form Saved', { mode: 'update' });
       } else {
         const result = await api.createForm(name, data as unknown as Record<string, unknown>);
         setCurrentFormId(result.id);
+        trackPlausibleEvent('Form Saved', { mode: 'create' });
       }
       setFormName(name);
       await loadFormList();
@@ -155,6 +158,7 @@ export function FormShell() {
     } catch {
       // continue with download anyway
     }
+    trackPlausibleEvent('Form Downloaded');
     api.downloadForm(currentFormId);
   };
 
@@ -191,6 +195,16 @@ export function FormShell() {
     try {
       const result = await api.reviewForm(currentFormId!);
       setFindings(result.findings);
+      const errorCount = result.findings.filter((finding) => finding.severity === 'error').length;
+      const warningCount = result.findings.filter((finding) => finding.severity === 'warning').length;
+      const infoCount = result.findings.filter((finding) => finding.severity === 'info').length;
+
+      trackPlausibleEvent('AI Review Run', {
+        findings: result.findings.length,
+        errors: errorCount,
+        warnings: warningCount,
+        info: infoCount,
+      });
     } catch {
       setFindings([{ severity: 'error', section: 'General', message: 'Failed to run AI review.' }]);
     } finally {
