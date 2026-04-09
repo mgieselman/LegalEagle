@@ -9,6 +9,19 @@ import {
 } from '../db/seed';
 
 function ensureTablesExist(): void {
+  // Drop and recreate all tables on startup until real data exists.
+  // This ensures schema changes are picked up without migration scripts.
+  sqlite.exec(`
+    DROP TABLE IF EXISTS validation_results;
+    DROP TABLE IF EXISTS extraction_results;
+    DROP TABLE IF EXISTS documents;
+    DROP TABLE IF EXISTS questionnaires;
+    DROP TABLE IF EXISTS cases;
+    DROP TABLE IF EXISTS clients;
+    DROP TABLE IF EXISTS users;
+    DROP TABLE IF EXISTS law_firms;
+  `);
+
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS law_firms (
       id TEXT PRIMARY KEY,
@@ -120,12 +133,6 @@ function ensureTablesExist(): void {
 
 export function autoSeed(): void {
   ensureTablesExist();
-
-  // Check if data already exists
-  const existingFirms = db.select().from(lawFirms).all();
-  if (existingFirms.length > 0) {
-    return;
-  }
 
   // Seed data in order (respecting FK constraints)
   db.insert(lawFirms).values(seedLawFirm).run();
