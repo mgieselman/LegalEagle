@@ -24,7 +24,8 @@ export async function extractText(content: Buffer, mimeType: string): Promise<st
 
 async function extractPdfText(content: Buffer): Promise<string> {
   // Dynamic import to avoid issues with ESM/CJS interop at startup
-  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js') as typeof import('pdfjs-dist');
 
   const data = new Uint8Array(content);
   const doc = await pdfjsLib.getDocument({ data, useSystemFonts: true }).promise;
@@ -34,8 +35,8 @@ async function extractPdfText(content: Buffer): Promise<string> {
     const page = await doc.getPage(i);
     const textContent = await page.getTextContent();
     const pageText = textContent.items
-      .filter((item) => 'str' in item)
-      .map((item) => (item as { str: string }).str)
+      .filter((item: Record<string, unknown>) => 'str' in item)
+      .map((item: Record<string, unknown>) => String(item.str))
       .join(' ');
     textParts.push(pageText);
   }
