@@ -9,6 +9,7 @@ import { createEmptyQuestionnaire } from '@/types/questionnaire';
 import { ChevronDown, ChevronRight, Plus, Save, Search, Download, Menu, X } from 'lucide-react';
 import { ProgressBar } from './ProgressBar';
 import { ErrorBoundary } from './ErrorBoundary';
+import { DocumentsPanel } from './DocumentsPanel';
 
 import { Section1NameResidence } from './form-sections/Section1NameResidence';
 import { Section2PriorBankruptcy } from './form-sections/Section2PriorBankruptcy';
@@ -80,7 +81,7 @@ export function FormShell({ caseId, mode = 'staff' }: FormShellProps = {}) {
   const [currentFormId, setCurrentFormId] = useState<string | null>(null);
   const [data, setData] = useState<QuestionnaireData>(createEmptyQuestionnaire());
   const [formName, setFormName] = useState('');
-  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['1']));
+  const [openSections, setOpenSections] = useState<Set<string>>(new Set(['docs', '1']));
   const [saving, setSaving] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const [hasReview, setHasReview] = useState(false);
@@ -437,6 +438,27 @@ export function FormShell({ caseId, mode = 'staff' }: FormShellProps = {}) {
       {/* Form sections */}
       <div className={`max-w-5xl mx-auto px-4 py-6 w-full box-border ${mode === 'staff' && hasReview && !reviewCollapsed ? 'md:mr-[420px]' : ''}`}>
         <div className="space-y-2">
+          {/* Documents panel — only when viewing a specific case */}
+          {caseId && (
+            <div className={`rounded-lg overflow-hidden border`}>
+              <button
+                className="w-full flex items-center gap-2 px-4 py-3 text-left font-medium hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => toggleSection('docs')}
+              >
+                {openSections.has('docs') ? (
+                  <ChevronDown className="h-4 w-4 shrink-0" />
+                ) : (
+                  <ChevronRight className="h-4 w-4 shrink-0" />
+                )}
+                Documents
+              </button>
+              {openSections.has('docs') && (
+                <div className="px-4 pb-4">
+                  <DocumentsPanel caseId={caseId} />
+                </div>
+              )}
+            </div>
+          )}
           {sections.map(({ key, title, Component }) => {
             const isOpen = openSections.has(key);
             const severity = sectionFindingSeverity(key);

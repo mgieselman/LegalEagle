@@ -8,6 +8,7 @@ import downloadRouter from './routes/download';
 import casesRouter from './routes/cases';
 import clientsRouter from './routes/clients';
 import clientPortalRouter from './routes/clientPortal';
+import documentsRouter from './routes/documents';
 import { autoSeed } from './services/autoSeed';
 import { DevAuthProvider } from './auth/devAuthProvider';
 import { createAuthMiddleware } from './auth/middleware';
@@ -38,6 +39,8 @@ app.use('/api/cases', createAuthMiddleware(authProvider));
 app.use('/api/cases', casesRouter);
 app.use('/api/clients', createAuthMiddleware(authProvider));
 app.use('/api/clients', clientsRouter);
+app.use('/api/documents', createAuthMiddleware(authProvider));
+app.use('/api/documents', documentsRouter);
 app.use('/api/client-portal', createAuthMiddleware(authProvider));
 app.use('/api/client-portal', clientPortalRouter);
 

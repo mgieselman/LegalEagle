@@ -93,6 +93,43 @@ export const questionnaires = sqliteTable('questionnaires', {
 });
 
 // ============================================================
+// Documents (uploaded files per case)
+// ============================================================
+export const documents = sqliteTable('documents', {
+  id: text('id').primaryKey(),
+  caseId: text('case_id')
+    .notNull()
+    .references(() => cases.id),
+  lawFirmId: text('law_firm_id')
+    .notNull()
+    .references(() => lawFirms.id),
+  uploadedBy: text('uploaded_by').notNull(), // userId or clientId
+  originalFilename: text('original_filename').notNull(),
+  blobPath: text('blob_path').notNull(),
+  mimeType: text('mime_type').notNull(),
+  fileSizeBytes: integer('file_size_bytes').notNull(),
+  fileHash: text('file_hash').notNull(), // SHA-256
+  docClass: text('doc_class', {
+    enum: [
+      'paystub', 'bank_statement_checking', 'bank_statement_savings', 'tax_return',
+      'ira_statement', '401k_statement', 'credit_card_statement', 'payroll_export',
+      'w2', '1099', 'other', 'unclassified',
+    ],
+  }),
+  belongsTo: text('belongs_to', { enum: ['debtor', 'spouse'] }).notNull().default('debtor'),
+  processingStatus: text('processing_status', {
+    enum: [
+      'uploaded', 'classifying', 'splitting', 'extracting', 'extracted',
+      'needs_review', 'reviewed', 'failed', 'replaced',
+    ],
+  }).notNull().default('uploaded'),
+  pageCount: integer('page_count'),
+  uploadBatchId: text('upload_batch_id'),
+  deletedAt: text('deleted_at'),
+  createdAt: text('created_at').notNull().default(new Date().toISOString()),
+});
+
+// ============================================================
 // Type helpers for select results
 // ============================================================
 export type LawFirm = typeof lawFirms.$inferSelect;
@@ -106,3 +143,5 @@ export type NewUser = typeof users.$inferInsert;
 export type NewClient = typeof clients.$inferInsert;
 export type NewCase = typeof cases.$inferInsert;
 export type NewQuestionnaire = typeof questionnaires.$inferInsert;
+export type Document = typeof documents.$inferSelect;
+export type NewDocument = typeof documents.$inferInsert;

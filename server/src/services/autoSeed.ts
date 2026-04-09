@@ -65,6 +65,24 @@ function ensureTablesExist(): void {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS documents (
+      id TEXT PRIMARY KEY,
+      case_id TEXT NOT NULL REFERENCES cases(id),
+      law_firm_id TEXT NOT NULL REFERENCES law_firms(id),
+      uploaded_by TEXT NOT NULL,
+      original_filename TEXT NOT NULL,
+      blob_path TEXT NOT NULL,
+      mime_type TEXT NOT NULL,
+      file_size_bytes INTEGER NOT NULL,
+      file_hash TEXT NOT NULL,
+      doc_class TEXT,
+      belongs_to TEXT NOT NULL DEFAULT 'debtor',
+      processing_status TEXT NOT NULL DEFAULT 'uploaded',
+      page_count INTEGER,
+      upload_batch_id TEXT,
+      deleted_at TEXT,
+      created_at TEXT NOT NULL
+    );
   `);
 }
 

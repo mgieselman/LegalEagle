@@ -95,6 +95,17 @@ export interface CaseSummary {
   createdAt: string;
 }
 
+export interface DocumentSummary {
+  id: string;
+  originalFilename: string;
+  mimeType: string;
+  fileSizeBytes: number;
+  docClass: string | null;
+  belongsTo: string;
+  processingStatus: string;
+  createdAt: string;
+}
+
 // ---- API ----
 
 export const api = {
@@ -193,4 +204,55 @@ export const api = {
 
   clientGetCase: (id: string) =>
     request<Record<string, unknown>>(`/client-portal/cases/${id}`),
+
+  // Documents
+  listDocuments: (caseId: string) =>
+    request<DocumentSummary[]>(`/documents?caseId=${encodeURIComponent(caseId)}`),
+
+  uploadDocument: async (
+    caseId: string,
+    file: File,
+    metadata?: { belongsTo?: string; docClass?: string },
+  ): Promise<DocumentSummary> => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('caseId', caseId);
+    if (metadata?.belongsTo) formData.append('belongsTo', metadata.belongsTo);
+    if (metadata?.docClass) formData.append('docClass', metadata.docClass);
+
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`${BASE}/documents/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(err.error || 'Upload failed');
+    }
+    return res.json();
+  },
+
+  deleteDocument: (id: string) =>
+    request<{ success: boolean }>(`/documents/${id}`, { method: 'DELETE' }),
+
+  downloadDocument: (id: string, filename: string) => {
+    const token = getToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    fetch(`${BASE}/documents/${id}/download`, { headers })
+      .then((res) => res.blob())
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+  },
 };
