@@ -1,12 +1,7 @@
-import { QuestionnaireData, VehicleEntry } from '@/types/questionnaire';
+import { VehicleEntry, SectionProps } from '@/types/questionnaire';
 import { FormField } from '@/components/FormField';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2 } from 'lucide-react';
-
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
 
 const INTENTION_OPTIONS = [
   { value: 'retain', label: 'Retain' },
@@ -30,7 +25,7 @@ function createEmptyVehicle(): VehicleEntry {
   };
 }
 
-export function Section27Vehicles({ data, onChange }: Props) {
+export function Section27Vehicles({ data, onChange }: SectionProps) {
   const vehicles = data.vehicles || [];
 
   const addVehicle = () => {

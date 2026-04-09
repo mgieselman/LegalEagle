@@ -1,10 +1,5 @@
-import { QuestionnaireData } from '@/types/questionnaire';
+import { QuestionnaireValue, SectionProps } from '@/types/questionnaire';
 import { FormField } from '@/components/FormField';
-
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
 
 function IncomeRow({
   label,
@@ -15,7 +10,7 @@ function IncomeRow({
   label: string;
   prefix: string;
   entry: { youAmount: string; youSource: string; spouseAmount: string; spouseSource: string };
-  onChange: (path: string, value: any) => void;
+  onChange: (path: string, value: QuestionnaireValue) => void;
 }) {
   return (
     <div className="space-y-2">
@@ -31,7 +26,7 @@ function IncomeRow({
   );
 }
 
-export function Section3OccupationIncome({ data, onChange }: Props) {
+export function Section3OccupationIncome({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 3: Occupation &amp; Income</h3>

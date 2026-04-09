@@ -1,11 +1,6 @@
-import { QuestionnaireData, LawsuitEntry, CriminalCase, AdminCase } from '@/types/questionnaire';
+import { LawsuitEntry, CriminalCase, AdminCase, SectionProps } from '@/types/questionnaire';
 import { YesNoField, TextAreaField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
-
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
 
 const lawsuitColumns = [
   { key: 'caseName', label: 'Case Name' },
@@ -20,7 +15,7 @@ const createEmptyLawsuit = (): LawsuitEntry => ({
   caseName: '', caseNo: '', court: '', typeOfCase: '', result: '', amount: '',
 });
 
-export function Section8Suits({ data, onChange }: Props) {
+export function Section8Suits({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 8: Suits &amp; Legal Actions</h3>

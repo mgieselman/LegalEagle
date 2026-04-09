@@ -1,13 +1,8 @@
-import { QuestionnaireData, CosignerEntry, CosignedDebt, BorrowedForOther, CollateralOnCosigned } from '@/types/questionnaire';
+import { CosignerEntry, CosignedDebt, BorrowedForOther, CollateralOnCosigned, SectionProps } from '@/types/questionnaire';
 import { YesNoField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section21Cosigners({ data, onChange }: Props) {
+export function Section21Cosigners({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 21: Cosigners</h3>

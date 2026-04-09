@@ -1,11 +1,6 @@
-import { QuestionnaireData, BankDeposit, SecurityDeposit, PersonalPropertyItem, HouseholdItem, FinancedItem } from '@/types/questionnaire';
+import { BankDeposit, SecurityDeposit, PersonalPropertyItem, HouseholdItem, FinancedItem, SectionProps } from '@/types/questionnaire';
 import { FormField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
-
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
 
 const DEFAULT_HOUSEHOLD_ITEMS: HouseholdItem[] = [
   { name: 'TV', howMany: '', yearPurchased: '', value: '' },
@@ -20,7 +15,7 @@ const DEFAULT_HOUSEHOLD_ITEMS: HouseholdItem[] = [
   { name: 'Microwave', howMany: '', yearPurchased: '', value: '' },
 ];
 
-export function Section26Assets({ data, onChange }: Props) {
+export function Section26Assets({ data, onChange }: SectionProps) {
   const householdItems = data.householdItems && data.householdItems.length > 0
     ? data.householdItems
     : DEFAULT_HOUSEHOLD_ITEMS;

@@ -19,7 +19,7 @@ interface DynamicTableProps<T extends Record<string, string>> {
 
 export function DynamicTable<T extends Record<string, string>>({
   columns,
-  rows,
+  rows = [] as unknown as T[],
   onChange,
   createEmpty,
 }: DynamicTableProps<T>) {

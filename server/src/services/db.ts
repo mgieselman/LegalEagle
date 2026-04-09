@@ -1,30 +1,13 @@
-import Database, { Database as DatabaseType } from 'better-sqlite3';
-import path from 'path';
-import fs from 'fs';
-
-const dbPath = process.env.DATABASE_PATH || path.join(__dirname, '../../data/legaleagle.db');
-
-// Ensure data directory exists
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)) {
-  fs.mkdirSync(dbDir, { recursive: true });
-}
-
-const db: DatabaseType = new Database(dbPath);
-
-// Enable WAL mode for better concurrency
-db.pragma('journal_mode = WAL');
-
-// Create tables
-db.exec(`
-  CREATE TABLE IF NOT EXISTS forms (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL DEFAULT 'Untitled',
-    data TEXT NOT NULL DEFAULT '{}',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  )
-`);
+/**
+ * Database service — Drizzle ORM wrapper with tenant scoping.
+ *
+ * All query functions require a lawFirmId for tenant isolation.
+ * Routes pass this from req.user.lawFirmId (set by auth middleware).
+ */
+import { eq, and, isNull, desc } from 'drizzle-orm';
+import db from '../db';
+import { questionnaires, cases } from '../db/schema';
+import { generateId } from '../db/seed';
 
 export interface FormRow {
   id: string;
@@ -40,32 +23,89 @@ export interface FormSummary {
   updated_at: string;
 }
 
-const stmts = {
-  listForms: db.prepare('SELECT id, name, updated_at FROM forms ORDER BY updated_at DESC'),
-  getForm: db.prepare('SELECT * FROM forms WHERE id = ?'),
-  createForm: db.prepare('INSERT INTO forms (id, name, data) VALUES (?, ?, ?)'),
-  updateForm: db.prepare('UPDATE forms SET name = ?, data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'),
-  deleteForm: db.prepare('DELETE FROM forms WHERE id = ?'),
-};
-
-export function listForms(): FormSummary[] {
-  return stmts.listForms.all() as FormSummary[];
+/**
+ * List all questionnaires for a tenant (non-deleted).
+ */
+export function listForms(lawFirmId: string): FormSummary[] {
+  return db
+    .select({
+      id: questionnaires.id,
+      name: questionnaires.name,
+      updated_at: questionnaires.updatedAt,
+    })
+    .from(questionnaires)
+    .where(and(eq(questionnaires.lawFirmId, lawFirmId), isNull(questionnaires.deletedAt)))
+    .orderBy(desc(questionnaires.updatedAt))
+    .all();
 }
 
-export function getForm(id: string): FormRow | undefined {
-  return stmts.getForm.get(id) as FormRow | undefined;
+/**
+ * Get a single questionnaire by ID, scoped to tenant.
+ */
+export function getForm(id: string, lawFirmId: string): FormRow | undefined {
+  const row = db
+    .select({
+      id: questionnaires.id,
+      name: questionnaires.name,
+      data: questionnaires.data,
+      created_at: questionnaires.createdAt,
+      updated_at: questionnaires.updatedAt,
+    })
+    .from(questionnaires)
+    .where(and(eq(questionnaires.id, id), eq(questionnaires.lawFirmId, lawFirmId)))
+    .get();
+
+  if (!row) return undefined;
+  return row;
 }
 
-export function createForm(id: string, name: string, data: string): void {
-  stmts.createForm.run(id, name, data);
+/**
+ * Create a new questionnaire in the tenant's default case.
+ */
+export function createForm(id: string, name: string, data: string, lawFirmId: string): void {
+  const now = new Date().toISOString();
+  // Find first case for this firm (backward compat until case selection is added in Phase 4)
+  const firstCase = db.select({ id: cases.id })
+    .from(cases)
+    .where(eq(cases.lawFirmId, lawFirmId))
+    .limit(1)
+    .get();
+  const caseId = firstCase?.id || 'case-001';
+
+  db.insert(questionnaires)
+    .values({
+      id,
+      caseId,
+      lawFirmId,
+      name,
+      data,
+      createdAt: now,
+      updatedAt: now,
+    })
+    .run();
 }
 
-export function updateForm(id: string, name: string, data: string): void {
-  stmts.updateForm.run(name, data, id);
+/**
+ * Update an existing questionnaire, scoped to tenant.
+ */
+export function updateForm(id: string, name: string, data: string, lawFirmId: string): void {
+  const now = new Date().toISOString();
+  db.update(questionnaires)
+    .set({ name, data, updatedAt: now })
+    .where(and(eq(questionnaires.id, id), eq(questionnaires.lawFirmId, lawFirmId)))
+    .run();
 }
 
-export function deleteForm(id: string): void {
-  stmts.deleteForm.run(id);
+/**
+ * Soft-delete a questionnaire, scoped to tenant.
+ */
+export function deleteForm(id: string, lawFirmId: string): void {
+  const now = new Date().toISOString();
+  db.update(questionnaires)
+    .set({ deletedAt: now })
+    .where(and(eq(questionnaires.id, id), eq(questionnaires.lawFirmId, lawFirmId)))
+    .run();
 }
 
+export { generateId };
 export default db;

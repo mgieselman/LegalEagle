@@ -1,13 +1,8 @@
-import { QuestionnaireData, ForeclosureEntry, GarnishmentEntry } from '@/types/questionnaire';
+import { ForeclosureEntry, GarnishmentEntry, SectionProps } from '@/types/questionnaire';
 import { YesNoField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section9Garnishment({ data, onChange }: Props) {
+export function Section9Garnishment({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 9: Garnishment &amp; Foreclosure</h3>

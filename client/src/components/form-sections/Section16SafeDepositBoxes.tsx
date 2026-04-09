@@ -1,13 +1,8 @@
-import { QuestionnaireData, SafeDepositBox } from '@/types/questionnaire';
+import { SafeDepositBox, SectionProps } from '@/types/questionnaire';
 import { YesNoField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section16SafeDepositBoxes({ data, onChange }: Props) {
+export function Section16SafeDepositBoxes({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 16: Safe Deposit Boxes</h3>

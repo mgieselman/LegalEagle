@@ -1,14 +1,14 @@
 import PDFDocument from 'pdfkit';
 import { QuestionnaireData, createEmptyQuestionnaire } from '../types/questionnaire';
 
-function deepMerge(target: any, source: any): any {
+function deepMerge(target: Record<string, unknown>, source: Record<string, unknown>): Record<string, unknown> {
   const result = { ...target };
   for (const key of Object.keys(target)) {
     if (source && source[key] !== undefined) {
       if (Array.isArray(target[key])) {
         result[key] = source[key];
       } else if (typeof target[key] === 'object' && target[key] !== null && !Array.isArray(target[key])) {
-        result[key] = deepMerge(target[key], source[key]);
+        result[key] = deepMerge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
       } else {
         result[key] = source[key];
       }
@@ -184,7 +184,10 @@ function addIncomeRow(
 // ---------------------------------------------------------------------------
 
 export function generatePdf(rawData: Partial<QuestionnaireData>): Promise<Buffer> {
-  const data = deepMerge(createEmptyQuestionnaire(), rawData) as QuestionnaireData;
+  const data = deepMerge(
+    createEmptyQuestionnaire() as unknown as Record<string, unknown>,
+    rawData as unknown as Record<string, unknown>,
+  ) as unknown as QuestionnaireData;
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
       size: 'LETTER',

@@ -537,6 +537,51 @@ export interface QuestionnaireData {
   vehicles: VehicleEntry[];
 }
 
+/** Union of all value types that can appear in QuestionnaireData fields */
+export type QuestionnaireValue =
+  | string
+  | string[]
+  | Record<string, string>
+  | Record<string, string>[]
+  | PriorAddress[]
+  | PriorBankruptcy[]
+  | IncomeEntry
+  | BusinessInfo[]
+  | TaxOwed[]
+  | DebtRepaid[]
+  | StudentLoan[]
+  | LawsuitEntry[]
+  | CriminalCase[]
+  | AdministrativeCase[]
+  | ForeclosureEntry[]
+  | GarnishmentEntry[]
+  | RepossessionEntry[]
+  | ReturnedProperty[]
+  | PropertyHeldByOthers[]
+  | PropertyAssignment[]
+  | GiftTransfer[]
+  | PropertySaleForHome[]
+  | LossEntry[]
+  | AttorneyConsulted[]
+  | ClosedBankAccount[]
+  | PropertyForOthers[]
+  | CosignedDebt[]
+  | BorrowedForOthers[]
+  | CollateralProperty[]
+  | UnsecuredDebt[]
+  | BankDeposit[]
+  | SecurityDeposit[]
+  | PersonalPropertyItem[]
+  | HouseholdItem[]
+  | FinancedItem[]
+  | VehicleEntry[];
+
+/** Standard props for all form section components */
+export interface SectionProps {
+  data: QuestionnaireData;
+  onChange: (path: string, value: QuestionnaireValue) => void;
+}
+
 export function createEmptyQuestionnaire(): QuestionnaireData {
   return {
     fullName: '', spouseFullName: '', ssn: '', spouseSsn: '',

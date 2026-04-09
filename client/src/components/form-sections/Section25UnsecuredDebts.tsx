@@ -1,12 +1,7 @@
-import { QuestionnaireData, UnsecuredDebt } from '@/types/questionnaire';
+import { UnsecuredDebt, SectionProps } from '@/types/questionnaire';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section25UnsecuredDebts({ data, onChange }: Props) {
+export function Section25UnsecuredDebts({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 25: Unsecured Debts</h3>

@@ -16,9 +16,22 @@ jobs:
         with:
           node-version: '20'
 
+      # ---- Client ----
       - name: Install client dependencies
         working-directory: ./client
         run: npm ci
+
+      - name: Lint client
+        working-directory: ./client
+        run: npm run lint
+
+      - name: Type-check client
+        working-directory: ./client
+        run: npx tsc --noEmit
+
+      - name: Run client tests
+        working-directory: ./client
+        run: npm test
 
       - name: Build client
         working-directory: ./client
@@ -26,9 +39,14 @@ jobs:
           VITE_PLAUSIBLE_DOMAIN: app-legaleagle.azurewebsites.net
         run: npm run build
 
+      # ---- Server ----
       - name: Install server dependencies
         working-directory: ./server
         run: npm ci
+
+      - name: Lint server
+        working-directory: ./server
+        run: npm run lint
 
       - name: Build server
         working-directory: ./server
@@ -38,6 +56,7 @@ jobs:
         working-directory: ./server
         run: npm test
 
+      # ---- Deploy ----
       - name: Prepare deployment package
         run: |
           mkdir -p deploy/client/dist

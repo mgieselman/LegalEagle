@@ -1,12 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { getForm } from '../services/db';
 import { generatePdf } from '../services/pdfGenerator';
+import { getLawFirmId } from '../auth/middleware';
 
 const router = Router();
 
 router.get('/:id/download', async (req: Request, res: Response) => {
   const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const form = getForm(id);
+  const firmId = getLawFirmId(req);
+  const form = getForm(id, firmId);
   if (!form) {
     res.status(404).json({ error: 'Form not found' });
     return;

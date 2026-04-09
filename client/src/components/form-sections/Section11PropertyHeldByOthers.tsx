@@ -1,13 +1,8 @@
-import { QuestionnaireData, PropertyHeldByOther } from '@/types/questionnaire';
-import { FormField, YesNoField, TextAreaField } from '@/components/FormField';
+import { PropertyHeldByOther, SectionProps } from '@/types/questionnaire';
+import { YesNoField, TextAreaField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section11PropertyHeldByOthers({ data, onChange }: Props) {
+export function Section11PropertyHeldByOthers({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 11: Property Held by Others</h3>

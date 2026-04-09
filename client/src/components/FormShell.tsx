@@ -4,9 +4,11 @@ import { Select } from './ui/select';
 import { ReviewPanel } from './ReviewPanel';
 import { api, type FormSummary, type ReviewFinding } from '@/api/client';
 import { trackPlausibleEvent } from '@/lib/plausible';
-import type { QuestionnaireData } from '@/types/questionnaire';
+import type { QuestionnaireData, QuestionnaireValue } from '@/types/questionnaire';
 import { createEmptyQuestionnaire } from '@/types/questionnaire';
 import { ChevronDown, ChevronRight, Plus, Save, Search, Download, Menu, X } from 'lucide-react';
+import { ProgressBar } from './ProgressBar';
+import { ErrorBoundary } from './ErrorBoundary';
 
 import { Section1NameResidence } from './form-sections/Section1NameResidence';
 import { Section2PriorBankruptcy } from './form-sections/Section2PriorBankruptcy';
@@ -66,7 +68,14 @@ const sections = [
   { key: '27', title: '27. Vehicles', Component: Section27Vehicles },
 ];
 
-export function FormShell() {
+interface FormShellProps {
+  /** When provided, loads the questionnaire for this case. Hides form selector. */
+  caseId?: string;
+  /** 'staff' shows review/download, 'client' shows progress bar instead */
+  mode?: 'staff' | 'client';
+}
+
+export function FormShell({ caseId, mode = 'staff' }: FormShellProps = {}) {
   const [formList, setFormList] = useState<FormSummary[]>([]);
   const [currentFormId, setCurrentFormId] = useState<string | null>(null);
   const [data, setData] = useState<QuestionnaireData>(createEmptyQuestionnaire());
@@ -95,7 +104,22 @@ export function FormShell() {
     }
   }, []);
 
-  useEffect(() => { loadFormList(); }, [loadFormList]);
+  useEffect(() => { if (!caseId) loadFormList(); }, [loadFormList, caseId]);
+
+  // When caseId is provided, load the case's questionnaire
+  useEffect(() => {
+    if (!caseId) return;
+    api.getCase(caseId).then((caseData) => {
+      const q = caseData.questionnaire as { id: string; name: string; data: Record<string, unknown> } | null;
+      if (q) {
+        setCurrentFormId(q.id);
+        setData(q.data as unknown as QuestionnaireData);
+        setFormName(q.name);
+      }
+    }).catch(() => {
+      showToast('Failed to load case');
+    });
+  }, [caseId]);
 
   const handleSelectForm = async (id: string) => {
     if (!id) return;
@@ -212,16 +236,14 @@ export function FormShell() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleChange = (path: string, value: any) => {
+  const handleChange = (path: string, value: QuestionnaireValue) => {
     setData((prev) => {
       const next = { ...prev };
       const keys = path.split('.');
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let obj: any = next;
+      let obj: Record<string, unknown> = next;
       for (let i = 0; i < keys.length - 1; i++) {
-        obj[keys[i]] = { ...obj[keys[i]] };
-        obj = obj[keys[i]];
+        obj[keys[i]] = { ...(obj[keys[i]] as Record<string, unknown>) };
+        obj = obj[keys[i]] as Record<string, unknown>;
       }
       obj[keys[keys.length - 1]] = value;
       return next;
@@ -329,26 +351,34 @@ export function FormShell() {
           <div className="flex-1" />
           {/* Desktop controls */}
           <div className="hidden md:flex items-center gap-3">
-            <Select
-              value={currentFormId || ''}
-              onChange={(e) => handleSelectForm(e.target.value)}
-              className="w-56"
-            >
-              <option value="">Select a form...</option>
-              {formOptions}
-            </Select>
-            <Button variant="outline" size="sm" onClick={handleNewForm} className="gap-1">
-              <Plus className="h-4 w-4" /> New Form
-            </Button>
+            {!caseId && (
+              <>
+                <Select
+                  value={currentFormId || ''}
+                  onChange={(e) => handleSelectForm(e.target.value)}
+                  className="w-56"
+                >
+                  <option value="">Select a form...</option>
+                  {formOptions}
+                </Select>
+                <Button variant="outline" size="sm" onClick={handleNewForm} className="gap-1">
+                  <Plus className="h-4 w-4" /> New Form
+                </Button>
+              </>
+            )}
             <Button variant="outline" size="sm" onClick={handleSave} disabled={saving} className="gap-1">
               <Save className="h-4 w-4" /> {saving ? 'Saving...' : 'Save'}
             </Button>
-            <Button variant="outline" size="sm" onClick={handleDownload} disabled={!currentFormId} className="gap-1">
-              <Download className="h-4 w-4" /> Download
-            </Button>
-            <Button size="sm" onClick={handleReview} disabled={reviewing} className="gap-1">
-              <Search className="h-4 w-4" /> {reviewing ? 'Reviewing...' : 'Review'}
-            </Button>
+            {mode === 'staff' && (
+              <>
+                <Button variant="outline" size="sm" onClick={handleDownload} disabled={!currentFormId} className="gap-1">
+                  <Download className="h-4 w-4" /> Download
+                </Button>
+                <Button size="sm" onClick={handleReview} disabled={reviewing} className="gap-1">
+                  <Search className="h-4 w-4" /> {reviewing ? 'Reviewing...' : 'Review'}
+                </Button>
+              </>
+            )}
           </div>
           {/* Mobile hamburger */}
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen((o) => !o)}>
@@ -360,35 +390,52 @@ export function FormShell() {
           <>
           <div className="fixed inset-0 z-30 md:hidden" onClick={() => setMobileMenuOpen(false)} />
           <div className="md:hidden border-t px-4 py-3 space-y-3 bg-background relative z-40">
-            <Select
-              value={currentFormId || ''}
-              onChange={(e) => { handleSelectForm(e.target.value); setMobileMenuOpen(false); }}
-              className="w-full"
-            >
-              <option value="">Select a form...</option>
-              {formOptions}
-            </Select>
+            {!caseId && (
+              <>
+                <Select
+                  value={currentFormId || ''}
+                  onChange={(e) => { handleSelectForm(e.target.value); setMobileMenuOpen(false); }}
+                  className="w-full"
+                >
+                  <option value="">Select a form...</option>
+                  {formOptions}
+                </Select>
+              </>
+            )}
             <div className="flex flex-wrap gap-2">
-              <Button variant="outline" size="sm" onClick={withMenuClose(handleNewForm)} className="gap-1 flex-1">
-                <Plus className="h-4 w-4" /> New
-              </Button>
+              {!caseId && (
+                <Button variant="outline" size="sm" onClick={withMenuClose(handleNewForm)} className="gap-1 flex-1">
+                  <Plus className="h-4 w-4" /> New
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={withMenuClose(handleSave)} disabled={saving} className="gap-1 flex-1">
                 <Save className="h-4 w-4" /> {saving ? 'Saving...' : 'Save'}
               </Button>
-              <Button variant="outline" size="sm" onClick={withMenuClose(handleDownload)} disabled={!currentFormId} className="gap-1 flex-1">
-                <Download className="h-4 w-4" /> Download
-              </Button>
+              {mode === 'staff' && (
+                <Button variant="outline" size="sm" onClick={withMenuClose(handleDownload)} disabled={!currentFormId} className="gap-1 flex-1">
+                  <Download className="h-4 w-4" /> Download
+                </Button>
+              )}
             </div>
-            <Button size="sm" onClick={withMenuClose(handleReview)} disabled={reviewing} className="gap-1 w-full">
-              <Search className="h-4 w-4" /> {reviewing ? 'Reviewing...' : 'Review'}
-            </Button>
+            {mode === 'staff' && (
+              <Button size="sm" onClick={withMenuClose(handleReview)} disabled={reviewing} className="gap-1 w-full">
+                <Search className="h-4 w-4" /> {reviewing ? 'Reviewing...' : 'Review'}
+              </Button>
+            )}
           </div>
           </>
         )}
       </div>
 
+      {/* Progress bar (client mode only) */}
+      {mode === 'client' && (
+        <div className="max-w-5xl mx-auto px-4 pt-6">
+          <ProgressBar data={data} />
+        </div>
+      )}
+
       {/* Form sections */}
-      <div className={`max-w-5xl mx-auto px-4 py-6 w-full box-border ${hasReview && !reviewCollapsed ? 'md:mr-[420px]' : ''}`}>
+      <div className={`max-w-5xl mx-auto px-4 py-6 w-full box-border ${mode === 'staff' && hasReview && !reviewCollapsed ? 'md:mr-[420px]' : ''}`}>
         <div className="space-y-2">
           {sections.map(({ key, title, Component }) => {
             const isOpen = openSections.has(key);
@@ -427,7 +474,9 @@ export function FormShell() {
                 </button>
                 {isOpen && (
                   <div className="px-4 pb-4">
-                    <Component data={data} onChange={handleChange} />
+                    <ErrorBoundary sectionName={title}>
+                      <Component data={data} onChange={handleChange} />
+                    </ErrorBoundary>
                   </div>
                 )}
               </div>
@@ -436,8 +485,8 @@ export function FormShell() {
         </div>
       </div>
 
-      {/* Review panel */}
-      {hasReview && (
+      {/* Review panel (staff only) */}
+      {mode === 'staff' && hasReview && (
         <ReviewPanel
           findings={findings}
           loading={reviewing}

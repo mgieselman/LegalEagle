@@ -1,13 +1,8 @@
-import { QuestionnaireData, WelfareEntry } from '@/types/questionnaire';
+import { WelfareEntry, SectionProps } from '@/types/questionnaire';
 import { FormField, YesNoField, TextAreaField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section5FinancialQuestions({ data, onChange }: Props) {
+export function Section5FinancialQuestions({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 5: Financial Questions</h3>

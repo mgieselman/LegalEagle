@@ -1,12 +1,7 @@
-import { QuestionnaireData } from '@/types/questionnaire';
+import { SectionProps } from '@/types/questionnaire';
 import { YesNoField, TextAreaField } from '@/components/FormField';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section20Accidents({ data, onChange }: Props) {
+export function Section20Accidents({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 20: Accidents</h3>

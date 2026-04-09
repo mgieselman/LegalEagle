@@ -1,11 +1,6 @@
-import { QuestionnaireData, TaxOwed } from '@/types/questionnaire';
+import { TaxOwed, SectionProps } from '@/types/questionnaire';
 import { FormField, YesNoField, TextAreaField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
-
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
 
 const taxColumns = [
   { key: 'entity', label: 'Entity' },
@@ -17,7 +12,7 @@ const taxColumns = [
 
 const createEmptyTax = (): TaxOwed => ({ entity: '', address: '', kindOfTax: '', years: '', amount: '' });
 
-export function Section6Taxes({ data, onChange }: Props) {
+export function Section6Taxes({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 6: Taxes</h3>

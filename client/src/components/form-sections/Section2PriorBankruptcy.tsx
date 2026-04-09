@@ -1,13 +1,8 @@
-import { QuestionnaireData, PriorBankruptcy } from '@/types/questionnaire';
-import { FormField, YesNoField, TextAreaField } from '@/components/FormField';
+import { PriorBankruptcy, SectionProps } from '@/types/questionnaire';
+import { YesNoField, TextAreaField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section2PriorBankruptcy({ data, onChange }: Props) {
+export function Section2PriorBankruptcy({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 2: Prior Bankruptcy</h3>

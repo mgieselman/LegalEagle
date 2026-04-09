@@ -1,13 +1,8 @@
-import { QuestionnaireData, GiftTransfer, PropertySaleProceeds } from '@/types/questionnaire';
-import { FormField, YesNoField } from '@/components/FormField';
+import { GiftTransfer, PropertySaleProceeds, SectionProps } from '@/types/questionnaire';
+import { YesNoField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section12GiftsTransfers({ data, onChange }: Props) {
+export function Section12GiftsTransfers({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 12: Gifts &amp; Transfers</h3>

@@ -1,7 +1,13 @@
-import { FormShell } from './components/FormShell';
+import { RouterProvider } from 'react-router';
+import { AuthProvider } from '@/context/AuthContext';
+import { router } from '@/router';
 
 function App() {
-  return <FormShell />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
 export default App;

@@ -5,6 +5,20 @@ import fs from 'fs';
 
 const TEST_DB_PATH = path.join(__dirname, '../../data/test.db');
 
+interface FormRow {
+  id: string;
+  name: string;
+  data: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface FormSummary {
+  id: string;
+  name: string;
+  updated_at: string;
+}
+
 describe('Forms CRUD', () => {
   let db: DatabaseType;
   let stmts: {
@@ -34,7 +48,9 @@ describe('Forms CRUD', () => {
       listForms: db.prepare('SELECT id, name, updated_at FROM forms ORDER BY updated_at DESC'),
       getForm: db.prepare('SELECT * FROM forms WHERE id = ?'),
       createForm: db.prepare('INSERT INTO forms (id, name, data) VALUES (?, ?, ?)'),
-      updateForm: db.prepare('UPDATE forms SET name = ?, data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'),
+      updateForm: db.prepare(
+        'UPDATE forms SET name = ?, data = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      ),
       deleteForm: db.prepare('DELETE FROM forms WHERE id = ?'),
     };
   });
@@ -45,32 +61,44 @@ describe('Forms CRUD', () => {
 
   afterAll(() => {
     db.close();
-    try { fs.unlinkSync(TEST_DB_PATH); } catch {}
-    try { fs.unlinkSync(TEST_DB_PATH + '-wal'); } catch {}
-    try { fs.unlinkSync(TEST_DB_PATH + '-shm'); } catch {}
+    try {
+      fs.unlinkSync(TEST_DB_PATH);
+    } catch {
+      /* ignore */
+    }
+    try {
+      fs.unlinkSync(TEST_DB_PATH + '-wal');
+    } catch {
+      /* ignore */
+    }
+    try {
+      fs.unlinkSync(TEST_DB_PATH + '-shm');
+    } catch {
+      /* ignore */
+    }
   });
 
   it('should create and retrieve a form', () => {
     stmts.createForm.run('test-id-1', 'John Doe', JSON.stringify({ fullName: 'John Doe' }));
-    const form = stmts.getForm.get('test-id-1') as any;
+    const form = stmts.getForm.get('test-id-1') as FormRow | undefined;
     expect(form).toBeDefined();
-    expect(form.name).toBe('John Doe');
-    expect(JSON.parse(form.data)).toEqual({ fullName: 'John Doe' });
+    expect(form!.name).toBe('John Doe');
+    expect(JSON.parse(form!.data)).toEqual({ fullName: 'John Doe' });
   });
 
   it('should list all forms', () => {
     stmts.createForm.run('id-1', 'Alice', '{}');
     stmts.createForm.run('id-2', 'Bob', '{}');
-    const forms = stmts.listForms.all() as any[];
+    const forms = stmts.listForms.all() as FormSummary[];
     expect(forms).toHaveLength(2);
   });
 
   it('should update a form', () => {
     stmts.createForm.run('id-1', 'Original', '{"a":1}');
     stmts.updateForm.run('Updated', '{"a":2}', 'id-1');
-    const form = stmts.getForm.get('id-1') as any;
-    expect(form.name).toBe('Updated');
-    expect(JSON.parse(form.data)).toEqual({ a: 2 });
+    const form = stmts.getForm.get('id-1') as FormRow | undefined;
+    expect(form!.name).toBe('Updated');
+    expect(JSON.parse(form!.data)).toEqual({ a: 2 });
   });
 
   it('should delete a form', () => {
@@ -86,8 +114,8 @@ describe('Forms CRUD', () => {
 
   it('should handle empty data', () => {
     stmts.createForm.run('empty-id', 'Empty', '{}');
-    const form = stmts.getForm.get('empty-id') as any;
-    expect(JSON.parse(form.data)).toEqual({});
+    const form = stmts.getForm.get('empty-id') as FormRow | undefined;
+    expect(JSON.parse(form!.data)).toEqual({});
   });
 
   it('should store large JSON data', () => {
@@ -101,8 +129,8 @@ describe('Forms CRUD', () => {
       })),
     };
     stmts.createForm.run('large-id', 'Large Form', JSON.stringify(largeData));
-    const form = stmts.getForm.get('large-id') as any;
-    const parsed = JSON.parse(form.data);
+    const form = stmts.getForm.get('large-id') as FormRow | undefined;
+    const parsed = JSON.parse(form!.data);
     expect(parsed.unsecuredDebts).toHaveLength(50);
   });
 });

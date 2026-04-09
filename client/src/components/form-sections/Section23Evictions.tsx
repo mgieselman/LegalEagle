@@ -1,13 +1,8 @@
-import { QuestionnaireData, EvictionSuit } from '@/types/questionnaire';
+import { EvictionSuit, SectionProps } from '@/types/questionnaire';
 import { YesNoField, TextAreaField } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-interface Props {
-  data: QuestionnaireData;
-  onChange: (path: string, value: any) => void;
-}
-
-export function Section23Evictions({ data, onChange }: Props) {
+export function Section23Evictions({ data, onChange }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 23: Evictions</h3>
