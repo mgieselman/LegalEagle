@@ -103,7 +103,40 @@ export interface DocumentSummary {
   docClass: string | null;
   belongsTo: string;
   processingStatus: string;
+  classificationConfidence: number | null;
+  classificationMethod: string | null;
   createdAt: string;
+  processingResult?: ProcessingResult | null;
+}
+
+export interface ProcessingResult {
+  docClass: string;
+  classificationConfidence: number;
+  classificationMethod: string;
+  extractionConfidence: number | null;
+  processingStatus: string;
+  validationWarnings: number;
+  needsReview: boolean;
+  error?: string;
+}
+
+export interface ExtractionResultSummary {
+  id: string;
+  extractionMethod: string;
+  confidenceScore: number | null;
+  extractedData: { data: Record<string, unknown>; fieldConfidences: Record<string, number>; warnings: string[] };
+  status: string;
+  version: number;
+  reviewedBy: string | null;
+  reviewNotes: string | null;
+}
+
+export interface ValidationResultSummary {
+  id: string;
+  validationType: string;
+  severity: 'error' | 'warning' | 'info';
+  message: string;
+  isDismissed: boolean;
 }
 
 // ---- API ----
@@ -238,6 +271,27 @@ export const api = {
 
   deleteDocument: (id: string) =>
     request<{ success: boolean }>(`/documents/${id}`, { method: 'DELETE' }),
+
+  getExtraction: (documentId: string) =>
+    request<ExtractionResultSummary>(`/documents/${documentId}/extraction`),
+
+  getValidations: (documentId: string) =>
+    request<ValidationResultSummary[]>(`/documents/${documentId}/validations`),
+
+  acceptExtraction: (documentId: string) =>
+    request<{ success: boolean }>(`/documents/${documentId}/extraction/accept`, { method: 'POST' }),
+
+  correctExtraction: (documentId: string, extractedData: Record<string, unknown>, notes: string) =>
+    request<Record<string, unknown>>(`/documents/${documentId}/extraction/correct`, {
+      method: 'POST',
+      body: JSON.stringify({ extractedData, notes }),
+    }),
+
+  dismissValidation: (documentId: string, validationId: string) =>
+    request<{ success: boolean }>(`/documents/${documentId}/validations/${validationId}/dismiss`, { method: 'POST' }),
+
+  reprocessDocument: (documentId: string) =>
+    request<ProcessingResult>(`/documents/${documentId}/reprocess`, { method: 'POST' }),
 
   downloadDocument: (id: string, filename: string) => {
     const token = getToken();

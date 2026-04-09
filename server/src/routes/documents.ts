@@ -18,8 +18,12 @@ import {
   getDocument,
   deleteDocument,
   findDuplicateByHash,
+  updateProcessingStatus,
 } from '../services/documents';
 import { getBlobStorage } from '../storage';
+import { processDocument } from '../services/pipeline';
+import { getLatestExtraction, updateExtractionStatus, createCorrectedExtraction } from '../services/extractionResults';
+import { listDocumentValidations, dismissValidation } from '../services/validationResults';
 
 const router = Router();
 
@@ -128,7 +132,22 @@ router.post('/upload', (req: Request, res: Response, next) => {
       lawFirmId,
     );
 
-    res.status(201).json(doc);
+    // Run processing pipeline (classify → extract → validate)
+    let processingResult = null;
+    try {
+      processingResult = await processDocument(
+        docId,
+        file.buffer,
+        file.originalname,
+        file.mimetype,
+        meta.caseId,
+        lawFirmId,
+      );
+    } catch {
+      // Processing failure doesn't block upload — document stays as 'uploaded' or 'failed'
+    }
+
+    res.status(201).json({ ...doc, processingResult });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Upload failed';
     res.status(500).json({ error: message });
@@ -181,6 +200,117 @@ router.delete('/:id', (req: Request, res: Response) => {
     return;
   }
   res.json({ success: true });
+});
+
+// ---------------------------------------------------------------
+// GET /api/documents/:id/extraction — latest extraction result
+// ---------------------------------------------------------------
+router.get('/:id/extraction', (req: Request, res: Response) => {
+  const id = paramId(req);
+  const lawFirmId = getLawFirmId(req);
+  const extraction = getLatestExtraction(id, lawFirmId);
+  if (!extraction) {
+    res.status(404).json({ error: 'No extraction found' });
+    return;
+  }
+  // Parse the extractedData JSON for the response
+  res.json({
+    ...extraction,
+    extractedData: JSON.parse(extraction.extractedData),
+  });
+});
+
+// ---------------------------------------------------------------
+// GET /api/documents/:id/validations — validation results
+// ---------------------------------------------------------------
+router.get('/:id/validations', (req: Request, res: Response) => {
+  const id = paramId(req);
+  const lawFirmId = getLawFirmId(req);
+  const validations = listDocumentValidations(id, lawFirmId);
+  res.json(validations);
+});
+
+// ---------------------------------------------------------------
+// POST /api/documents/:id/extraction/accept — accept extraction
+// ---------------------------------------------------------------
+router.post('/:id/extraction/accept', (req: Request, res: Response) => {
+  const id = paramId(req);
+  const lawFirmId = getLawFirmId(req);
+  const extraction = getLatestExtraction(id, lawFirmId);
+  if (!extraction) {
+    res.status(404).json({ error: 'No extraction found' });
+    return;
+  }
+  const userId = req.user && 'userId' in req.user ? req.user.userId : 'unknown';
+  updateExtractionStatus(extraction.id, 'reviewed_accepted', userId, null, lawFirmId);
+  updateProcessingStatus(id, 'reviewed', lawFirmId);
+  res.json({ success: true });
+});
+
+// ---------------------------------------------------------------
+// POST /api/documents/:id/extraction/correct — submit corrections
+// ---------------------------------------------------------------
+router.post('/:id/extraction/correct', (req: Request, res: Response) => {
+  const id = paramId(req);
+  const lawFirmId = getLawFirmId(req);
+  const { extractedData, notes } = req.body as { extractedData: Record<string, unknown>; notes?: string };
+  if (!extractedData) {
+    res.status(400).json({ error: 'extractedData is required' });
+    return;
+  }
+  const userId = req.user && 'userId' in req.user ? req.user.userId : 'unknown';
+  const corrected = createCorrectedExtraction(
+    id,
+    JSON.stringify(extractedData),
+    userId,
+    notes ?? '',
+    lawFirmId,
+  );
+
+  updateProcessingStatus(id, 'reviewed', lawFirmId);
+  res.json(corrected);
+});
+
+// ---------------------------------------------------------------
+// POST /api/documents/:id/validations/:vid/dismiss — dismiss a validation
+// ---------------------------------------------------------------
+router.post('/:id/validations/:vid/dismiss', (req: Request, res: Response) => {
+  const vid = Array.isArray(req.params.vid) ? req.params.vid[0] : req.params.vid;
+  const lawFirmId = getLawFirmId(req);
+  const userId = req.user && 'userId' in req.user ? req.user.userId : 'unknown';
+  const dismissed = dismissValidation(vid, userId, lawFirmId);
+  if (!dismissed) {
+    res.status(404).json({ error: 'Validation not found' });
+    return;
+  }
+  res.json({ success: true });
+});
+
+// ---------------------------------------------------------------
+// POST /api/documents/:id/reprocess — re-run the pipeline
+// ---------------------------------------------------------------
+router.post('/:id/reprocess', async (req: Request, res: Response) => {
+  const id = paramId(req);
+  const lawFirmId = getLawFirmId(req);
+  const doc = getDocument(id, lawFirmId);
+  if (!doc) {
+    res.status(404).json({ error: 'Document not found' });
+    return;
+  }
+
+  const storage = getBlobStorage();
+  const content = await storage.download(doc.blobPath);
+
+  const result = await processDocument(
+    id,
+    content,
+    doc.originalFilename,
+    doc.mimeType,
+    doc.caseId,
+    lawFirmId,
+  );
+
+  res.json(result);
 });
 
 export default router;

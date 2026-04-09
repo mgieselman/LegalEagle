@@ -13,6 +13,8 @@ export interface DocumentSummary {
   docClass: string | null;
   belongsTo: string;
   processingStatus: string;
+  classificationConfidence: number | null;
+  classificationMethod: string | null;
   createdAt: string;
 }
 
@@ -25,6 +27,8 @@ function toSummary(doc: Document): DocumentSummary {
     docClass: doc.docClass,
     belongsTo: doc.belongsTo,
     processingStatus: doc.processingStatus,
+    classificationConfidence: doc.classificationConfidence,
+    classificationMethod: doc.classificationMethod,
     createdAt: doc.createdAt,
   };
 }
@@ -100,6 +104,8 @@ export function createDocument(input: CreateDocumentInput, lawFirmId: string): D
     docClass: input.docClass ?? null,
     belongsTo: input.belongsTo ?? 'debtor',
     processingStatus: 'uploaded',
+    classificationConfidence: null,
+    classificationMethod: null,
     createdAt: now,
   };
 }
@@ -115,6 +121,38 @@ export function deleteDocument(id: string, lawFirmId: string): boolean {
         isNull(documents.deletedAt),
       ),
     )
+    .run();
+  return result.changes > 0;
+}
+
+export function updateProcessingStatus(
+  id: string,
+  status: Document['processingStatus'],
+  lawFirmId: string,
+): boolean {
+  const result = db
+    .update(documents)
+    .set({ processingStatus: status })
+    .where(and(eq(documents.id, id), eq(documents.lawFirmId, lawFirmId)))
+    .run();
+  return result.changes > 0;
+}
+
+export function updateClassification(
+  id: string,
+  docClass: Document['docClass'],
+  confidence: number,
+  method: 'rule_engine' | 'ai',
+  lawFirmId: string,
+): boolean {
+  const result = db
+    .update(documents)
+    .set({
+      docClass,
+      classificationConfidence: confidence,
+      classificationMethod: method,
+    })
+    .where(and(eq(documents.id, id), eq(documents.lawFirmId, lawFirmId)))
     .run();
   return result.changes > 0;
 }

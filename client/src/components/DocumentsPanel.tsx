@@ -2,6 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from './ui/button';
 import { api, type DocumentSummary } from '@/api/client';
 import { Upload, Download, Trash2, FileText, AlertCircle } from 'lucide-react';
+import { ProcessingStatusBadge } from './ProcessingStatusBadge';
+import { DocumentReviewPanel } from './DocumentReviewPanel';
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.csv', '.xlsx', '.txt'];
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -26,6 +28,7 @@ export function DocumentsPanel({ caseId }: DocumentsPanelProps) {
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const loadDocuments = useCallback(async () => {
@@ -159,6 +162,7 @@ export function DocumentsPanel({ caseId }: DocumentsPanelProps) {
               <thead>
                 <tr className="border-b">
                   <th className="text-left font-medium p-2 text-muted-foreground">File</th>
+                  <th className="text-left font-medium p-2 text-muted-foreground">Status</th>
                   <th className="text-left font-medium p-2 text-muted-foreground">Size</th>
                   <th className="text-left font-medium p-2 text-muted-foreground">Uploaded</th>
                   <th className="w-24" />
@@ -166,12 +170,19 @@ export function DocumentsPanel({ caseId }: DocumentsPanelProps) {
               </thead>
               <tbody>
                 {documents.map((doc) => (
-                  <tr key={doc.id} className="border-b">
+                  <tr
+                    key={doc.id}
+                    className={`border-b cursor-pointer hover:bg-muted/30 transition-colors ${selectedDocId === doc.id ? 'bg-muted/50' : ''}`}
+                    onClick={() => setSelectedDocId(selectedDocId === doc.id ? null : doc.id)}
+                  >
                     <td className="p-2">
                       <div className="flex items-center gap-2">
                         <FileText className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="truncate max-w-xs">{doc.originalFilename}</span>
                       </div>
+                    </td>
+                    <td className="p-2">
+                      <ProcessingStatusBadge status={doc.processingStatus} />
                     </td>
                     <td className="p-2 text-muted-foreground">{formatSize(doc.fileSizeBytes)}</td>
                     <td className="p-2 text-muted-foreground">{formatDate(doc.createdAt)}</td>
@@ -251,14 +262,32 @@ export function DocumentsPanel({ caseId }: DocumentsPanelProps) {
                     )}
                   </div>
                 </div>
-                <div className="text-xs text-muted-foreground">
-                  {formatSize(doc.fileSizeBytes)} &middot; {formatDate(doc.createdAt)}
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <ProcessingStatusBadge status={doc.processingStatus} />
+                  <span>{formatSize(doc.fileSizeBytes)}</span>
+                  <span>&middot;</span>
+                  <span>{formatDate(doc.createdAt)}</span>
                 </div>
               </div>
             ))}
           </div>
         </>
       )}
+
+      {/* Review panel for selected document */}
+      {selectedDocId && (() => {
+        const doc = documents.find((d) => d.id === selectedDocId);
+        if (!doc) return null;
+        return (
+          <DocumentReviewPanel
+            documentId={selectedDocId}
+            docClass={doc.docClass}
+            processingStatus={doc.processingStatus}
+            onClose={() => setSelectedDocId(null)}
+            onUpdated={() => { setSelectedDocId(null); loadDocuments(); }}
+          />
+        );
+      })()}
     </div>
   );
 }

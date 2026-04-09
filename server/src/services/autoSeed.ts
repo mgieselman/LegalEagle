@@ -78,8 +78,40 @@ function ensureTablesExist(): void {
       doc_class TEXT,
       belongs_to TEXT NOT NULL DEFAULT 'debtor',
       processing_status TEXT NOT NULL DEFAULT 'uploaded',
+      classification_confidence REAL,
+      classification_method TEXT,
       page_count INTEGER,
       upload_batch_id TEXT,
+      deleted_at TEXT,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS extraction_results (
+      id TEXT PRIMARY KEY,
+      document_id TEXT NOT NULL REFERENCES documents(id),
+      law_firm_id TEXT NOT NULL REFERENCES law_firms(id),
+      extraction_method TEXT NOT NULL,
+      confidence_score REAL,
+      extracted_data TEXT NOT NULL DEFAULT '{}',
+      status TEXT NOT NULL DEFAULT 'pending',
+      version INTEGER NOT NULL DEFAULT 1,
+      reviewed_by TEXT,
+      reviewed_at TEXT,
+      review_notes TEXT,
+      deleted_at TEXT,
+      created_at TEXT NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS validation_results (
+      id TEXT PRIMARY KEY,
+      case_id TEXT NOT NULL REFERENCES cases(id),
+      document_id TEXT,
+      law_firm_id TEXT NOT NULL REFERENCES law_firms(id),
+      validation_type TEXT NOT NULL,
+      severity TEXT NOT NULL,
+      message TEXT NOT NULL,
+      details_json TEXT,
+      is_dismissed INTEGER NOT NULL DEFAULT 0,
+      dismissed_by TEXT,
+      dismissed_at TEXT,
       deleted_at TEXT,
       created_at TEXT NOT NULL
     );

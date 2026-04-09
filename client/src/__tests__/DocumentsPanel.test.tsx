@@ -9,6 +9,10 @@ vi.mock('@/api/client', () => ({
     uploadDocument: vi.fn(),
     deleteDocument: vi.fn(),
     downloadDocument: vi.fn(),
+    getExtraction: vi.fn(),
+    getValidations: vi.fn(),
+    acceptExtraction: vi.fn(),
+    dismissValidation: vi.fn(),
   },
 }));
 
@@ -20,6 +24,9 @@ const CASE_ID = 'case-001';
 describe('DocumentsPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    // Default mocks for review panel that may render on click
+    mockedApi.getExtraction.mockRejectedValue(new Error('not found'));
+    mockedApi.getValidations.mockResolvedValue([] as never);
   });
 
   it('renders empty state when no documents', async () => {
