@@ -13,8 +13,6 @@ export async function extractText(content: Buffer, mimeType: string): Promise<st
       return extractPdfText(content);
 
     case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-      // XLSX: return raw buffer as string for basic content detection
-      // Full XLSX parsing would require a library like xlsx/exceljs
       return content.toString('utf-8').replace(/[^\x20-\x7E\n\r\t]/g, ' ');
 
     default:
@@ -23,11 +21,7 @@ export async function extractText(content: Buffer, mimeType: string): Promise<st
 }
 
 async function extractPdfText(content: Buffer): Promise<string> {
-  // Dynamic import to avoid issues with ESM/CJS interop at startup
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js') as {
-    getDocument: (params: { data: Uint8Array; useSystemFonts: boolean }) => { promise: Promise<{ numPages: number; getPage: (n: number) => Promise<{ getTextContent: () => Promise<{ items: Array<Record<string, unknown>> }> }> }> };
-  };
+  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
 
   const data = new Uint8Array(content);
   const doc = await pdfjsLib.getDocument({ data, useSystemFonts: true }).promise;
