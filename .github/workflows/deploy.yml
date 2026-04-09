@@ -79,3 +79,10 @@ jobs:
           zip -r ../deploy.zip .
           cd ..
           az webapp deploy --resource-group rg-legaleagle --name app-legaleagle --src-path deploy.zip --type zip
+
+      - name: Wipe and reseed database (no real data yet)
+        run: |
+          az webapp ssh --resource-group rg-legaleagle --name app-legaleagle --timeout 30 <<'SSHEOF' || true
+          rm -f /home/site/wwwroot/server/data/legaleagle.db*
+          SSHEOF
+          az webapp restart --resource-group rg-legaleagle --name app-legaleagle
