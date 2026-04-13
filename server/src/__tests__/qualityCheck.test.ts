@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { checkDocumentQuality } from '../../services/qualityCheck';
+import { checkDocumentQuality } from '../services/qualityCheck';
 
 describe('Document Quality Check Service', () => {
   const mockExistingDocuments = [

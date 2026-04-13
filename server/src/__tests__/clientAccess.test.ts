@@ -79,11 +79,8 @@ describe('Client Access Control', () => {
     const res = await request(app)
       .get('/api/cases')
       .set('Authorization', `Bearer ${client1Token}`);
-    // The cases route uses getLawFirmId which works for both,
-    // but the data returned is the full list. The real protection is
-    // that the client portal has separate routes with stricter scoping.
-    // For now, verify staff routes return data (they're not blocked at route level yet)
-    expect(res.status).toBe(200);
+    // Staff routes are now properly blocked for client tokens
+    expect(res.status).toBe(403);
   });
 
   // Client cannot access clients list

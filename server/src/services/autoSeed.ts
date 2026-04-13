@@ -62,6 +62,8 @@ function ensureTablesExist(): void {
       law_firm_id TEXT NOT NULL REFERENCES law_firms(id),
       name TEXT NOT NULL DEFAULT 'Untitled',
       data TEXT NOT NULL DEFAULT '{}',
+      metadata TEXT DEFAULT '{}',
+      version INTEGER NOT NULL DEFAULT 1,
       deleted_at TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
@@ -83,6 +85,7 @@ function ensureTablesExist(): void {
       classification_method TEXT,
       page_count INTEGER,
       upload_batch_id TEXT,
+      quality_issues TEXT DEFAULT '[]',
       deleted_at TEXT,
       created_at TEXT NOT NULL
     );
