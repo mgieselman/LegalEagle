@@ -1,0 +1,47 @@
+[project]
+name = "legaleagle-extractor"
+version = "0.1.0"
+description = "Standalone document classification and extraction service for LegalEagle"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.93",
+    "fastapi[standard]>=0.135",
+    "markitdown>=0.1",
+    "openpyxl>=3.1",
+    "pdftext>=0.6",
+    "pillow>=10.0",
+    "pydantic>=2.12",
+    "pypdf>=6.0",
+    "pytesseract>=0.3",
+    "python-multipart>=0.0.26",
+    "uvicorn>=0.44",
+]
+
+[project.optional-dependencies]
+dev = [
+    "httpx>=0.28",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+]
+# Local OCR for scanned PDFs — models (~2 GB) downloaded on first use
+ocr-local = [
+    "marker-pdf>=0.3",
+]
+# Azure Document Intelligence fallback — requires AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT
+# and AZURE_DOCUMENT_INTELLIGENCE_KEY env vars
+ocr-azure = [
+    "azure-ai-documentintelligence>=1.0",
+]
+# Both OCR tiers
+ocr = [
+    "marker-pdf>=0.3",
+    "azure-ai-documentintelligence>=1.0",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.backends.legacy:build"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

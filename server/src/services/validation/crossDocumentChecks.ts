@@ -28,14 +28,14 @@ export function validateCrossDocument(
 
     const data = JSON.parse(extraction.extractedData) as Record<string, unknown>;
     switch (doc.docClass) {
-      case 'paystub':
+      case 'payStub.us':
         paystubExtractions.push({ data });
         break;
-      case 'bank_statement_checking':
-      case 'bank_statement_savings':
+      case 'bankStatement.us.checking':
+      case 'bankStatement.us.savings':
         bankExtractions.push({ data });
         break;
-      case 'w2':
+      case 'tax.us.w2':
         w2Extractions.push({ data });
         break;
     }

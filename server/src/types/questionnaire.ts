@@ -1,3 +1,13 @@
+export interface AutofillSource {
+  documentId: string;
+  docClass: string;
+  confidence: number;
+}
+
+export interface QuestionnaireMetadata {
+  autofillSources: Record<string, AutofillSource>; // field path -> source
+}
+
 export interface PriorAddress {
   address: string;
   dateMovedIn: string;

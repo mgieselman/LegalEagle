@@ -10,5 +10,6 @@
         "command": true,
         "gh": true,
         "git rev-parse": true
-    }
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:system"
 }

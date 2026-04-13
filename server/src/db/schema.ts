@@ -87,6 +87,8 @@ export const questionnaires = sqliteTable('questionnaires', {
     .references(() => lawFirms.id), // denormalized
   name: text('name').notNull().default('Untitled'),
   data: text('data').notNull().default('{}'), // JSON string of QuestionnaireData
+  metadata: text('metadata', { mode: 'json' }).default('{}'), // QuestionnaireMetadata (autofill sources, etc.)
+  version: integer('version').notNull().default(1), // optimistic locking
   deletedAt: text('deleted_at'),
   createdAt: text('created_at').notNull().default(new Date().toISOString()),
   updatedAt: text('updated_at').notNull().default(new Date().toISOString()),
@@ -111,9 +113,12 @@ export const documents = sqliteTable('documents', {
   fileHash: text('file_hash').notNull(), // SHA-256
   docClass: text('doc_class', {
     enum: [
-      'paystub', 'bank_statement_checking', 'bank_statement_savings', 'tax_return',
-      'ira_statement', '401k_statement', 'credit_card_statement', 'payroll_export',
-      'w2', '1099', 'other', 'unclassified',
+      'payStub.us', 'bankStatement.us.checking', 'bankStatement.us.savings', 'tax.us.1040',
+      'ira_statement', '401k_statement', 'creditCard', 'payroll_export',
+      'tax.us.w2', 'tax.us.1099', 'other', 'unclassified',
+      'profit_loss_statement', 'retirement_account', 'collection_letter',
+      'legal_document', 'vehicle_loan_statement', 'mortgage.us', 'social_security_letter',
+      'idDocument', 'social_security_card', 'brokerage_statement', 'vehicle_title',
     ],
   }),
   belongsTo: text('belongs_to', { enum: ['debtor', 'spouse'] }).notNull().default('debtor'),
@@ -127,6 +132,7 @@ export const documents = sqliteTable('documents', {
   classificationMethod: text('classification_method', { enum: ['rule_engine', 'ai'] }),
   pageCount: integer('page_count'),
   uploadBatchId: text('upload_batch_id'),
+  qualityIssues: text('quality_issues', { mode: 'json' }).default('[]'), // QualityIssue[]
   deletedAt: text('deleted_at'),
   createdAt: text('created_at').notNull().default(new Date().toISOString()),
 });
@@ -193,6 +199,13 @@ export type User = typeof users.$inferSelect;
 export type Client = typeof clients.$inferSelect;
 export type Case = typeof cases.$inferSelect;
 export type Questionnaire = typeof questionnaires.$inferSelect;
+
+export interface QualityIssue {
+  type: 'duplicate' | 'validation_error' | 'unsupported_format' | 'oversized';
+  message: string;
+  severity: 'error' | 'warning';
+  canRetry: boolean;
+}
 
 export type NewLawFirm = typeof lawFirms.$inferInsert;
 export type NewUser = typeof users.$inferInsert;

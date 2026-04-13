@@ -13,6 +13,8 @@ export interface FormRow {
   id: string;
   name: string;
   data: string;
+  metadata: string;
+  version: number;
   created_at: string;
   updated_at: string;
 }
@@ -48,6 +50,8 @@ export function getForm(id: string, lawFirmId: string): FormRow | undefined {
       id: questionnaires.id,
       name: questionnaires.name,
       data: questionnaires.data,
+      metadata: questionnaires.metadata,
+      version: questionnaires.version,
       created_at: questionnaires.createdAt,
       updated_at: questionnaires.updatedAt,
     })
@@ -56,7 +60,10 @@ export function getForm(id: string, lawFirmId: string): FormRow | undefined {
     .get();
 
   if (!row) return undefined;
-  return row;
+  return {
+    ...row,
+    metadata: row.metadata as string,
+  };
 }
 
 /**
@@ -87,13 +94,54 @@ export function createForm(id: string, name: string, data: string, lawFirmId: st
 
 /**
  * Update an existing questionnaire, scoped to tenant.
+ * If expectedVersion is provided, returns false on version mismatch (optimistic locking).
  */
-export function updateForm(id: string, name: string, data: string, lawFirmId: string): void {
+export function updateForm(
+  id: string, 
+  name: string, 
+  data: string, 
+  lawFirmId: string, 
+  expectedVersion?: number,
+  metadata?: string
+): { success: boolean; version: number } {
   const now = new Date().toISOString();
+  const updateData: any = { name, data, updatedAt: now };
+  if (metadata !== undefined) {
+    updateData.metadata = metadata;
+  }
+
+  if (expectedVersion !== undefined) {
+    // Optimistic locking: only update if version matches
+    updateData.version = expectedVersion + 1;
+    const result = db.update(questionnaires)
+      .set(updateData)
+      .where(and(eq(questionnaires.id, id), eq(questionnaires.lawFirmId, lawFirmId), eq(questionnaires.version, expectedVersion)))
+      .run();
+
+    if (result.changes === 0) {
+      // Version mismatch — fetch current version
+      const current = db.select({ version: questionnaires.version })
+        .from(questionnaires)
+        .where(and(eq(questionnaires.id, id), eq(questionnaires.lawFirmId, lawFirmId)))
+        .get();
+      return { success: false, version: current?.version ?? 0 };
+    }
+    return { success: true, version: expectedVersion + 1 };
+  }
+
+  // No version check — always update
+  const current = db.select({ version: questionnaires.version })
+    .from(questionnaires)
+    .where(and(eq(questionnaires.id, id), eq(questionnaires.lawFirmId, lawFirmId)))
+    .get();
+  const nextVersion = (current?.version ?? 0) + 1;
+  updateData.version = nextVersion;
+
   db.update(questionnaires)
-    .set({ name, data, updatedAt: now })
+    .set(updateData)
     .where(and(eq(questionnaires.id, id), eq(questionnaires.lawFirmId, lawFirmId)))
     .run();
+  return { success: true, version: nextVersion };
 }
 
 /**

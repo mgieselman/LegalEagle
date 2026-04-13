@@ -9,18 +9,6 @@ import {
 } from '../db/seed';
 
 function ensureTablesExist(): void {
-  // Drop and recreate all tables on startup until real data exists.
-  // This ensures schema changes are picked up without migration scripts.
-  sqlite.exec(`
-    DROP TABLE IF EXISTS validation_results;
-    DROP TABLE IF EXISTS extraction_results;
-    DROP TABLE IF EXISTS documents;
-    DROP TABLE IF EXISTS questionnaires;
-    DROP TABLE IF EXISTS cases;
-    DROP TABLE IF EXISTS clients;
-    DROP TABLE IF EXISTS users;
-    DROP TABLE IF EXISTS law_firms;
-  `);
 
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS law_firms (
@@ -134,22 +122,18 @@ function ensureTablesExist(): void {
 export function autoSeed(): void {
   ensureTablesExist();
 
-  // Seed data in order (respecting FK constraints)
-  db.insert(lawFirms).values(seedLawFirm).run();
+  // Insert seed data only if not already present (idempotent — preserves real data)
+  db.insert(lawFirms).values(seedLawFirm).onConflictDoNothing().run();
   for (const user of seedUsers) {
-    db.insert(users).values(user).run();
+    db.insert(users).values(user).onConflictDoNothing().run();
   }
   for (const client of seedClients) {
-    db.insert(clients).values(client).run();
+    db.insert(clients).values(client).onConflictDoNothing().run();
   }
   for (const caseData of seedCases) {
-    db.insert(cases).values(caseData).run();
+    db.insert(cases).values(caseData).onConflictDoNothing().run();
   }
   for (const questionnaire of seedQuestionnaires) {
-    db.insert(questionnaires).values(questionnaire).run();
+    db.insert(questionnaires).values(questionnaire).onConflictDoNothing().run();
   }
-
-  console.log(
-    `Auto-seeded: 1 firm, ${seedUsers.length} users, ${seedClients.length} clients, ${seedCases.length} cases, ${seedQuestionnaires.length} questionnaires`,
-  );
 }

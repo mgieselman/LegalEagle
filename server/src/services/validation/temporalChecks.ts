@@ -24,14 +24,14 @@ export function validateTemporalCoverage(
 
     const data = JSON.parse(extraction.extractedData) as Record<string, unknown>;
 
-    if (doc.docClass === 'paystub') {
+    if (doc.docClass === 'payStub.us') {
       const periodEnd = data.pay_period_end as string | undefined;
       if (periodEnd) {
         paystubMonths.add(periodEnd.substring(0, 7)); // YYYY-MM
       }
     }
 
-    if (doc.docClass === 'bank_statement_checking' || doc.docClass === 'bank_statement_savings') {
+    if (doc.docClass === 'bankStatement.us.checking' || doc.docClass === 'bankStatement.us.savings') {
       const periodEnd = data.statement_period_end as string | undefined;
       if (periodEnd) {
         bankStatementMonths.add(periodEnd.substring(0, 7));

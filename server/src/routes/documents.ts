@@ -6,7 +6,7 @@ import multer from 'multer';
 import { eq, and, isNull } from 'drizzle-orm';
 import db from '../db';
 import { cases } from '../db/schema';
-import { getLawFirmId } from '../auth/middleware';
+import { getLawFirmId, requireStaff, verifyCaseAccess } from '../auth/middleware';
 import {
   uploadDocumentMetaSchema,
   ALLOWED_EXTENSIONS,
@@ -20,17 +20,14 @@ import {
   findDuplicateByHash,
   updateProcessingStatus,
 } from '../services/documents';
+import { checkDocumentQuality } from '../services/qualityCheck';
 import { getBlobStorage } from '../storage';
 import { processDocument } from '../services/pipeline';
 import { getLatestExtraction, updateExtractionStatus, createCorrectedExtraction } from '../services/extractionResults';
 import { listDocumentValidations, dismissValidation } from '../services/validationResults';
+import { paramId } from '../utils/params';
 
 const router = Router();
-
-function paramId(req: Request): string {
-  const id = req.params.id;
-  return Array.isArray(id) ? id[0] : id;
-}
 
 // Multer config: memory storage, file size + extension filtering
 const upload = multer({
@@ -47,7 +44,7 @@ const upload = multer({
 });
 
 // Wrapper to catch multer errors and return 400 instead of 500
-function handleMulterError(err: Error | null, req: Request, res: Response, next: () => void): void {
+function handleMulterError(err: Error | null, _req: Request, res: Response, next: () => void): void {
   if (err) {
     res.status(400).json({ error: err.message });
     return;
@@ -79,6 +76,10 @@ router.post('/upload', (req: Request, res: Response, next) => {
       return;
     }
     const meta = metaResult.data;
+
+    // Verify client has access to this case
+    if (!verifyCaseAccess(req, res, meta.caseId)) return;
+
     const lawFirmId = getLawFirmId(req);
 
     // Verify case exists and belongs to tenant
@@ -106,6 +107,26 @@ router.post('/upload', (req: Request, res: Response, next) => {
       return;
     }
 
+    // Perform quality checks
+    const existingDocuments = listDocuments(meta.caseId, lawFirmId);
+    const qualityIssues = await checkDocumentQuality(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      fileHash,
+      existingDocuments.map(d => ({ originalFilename: d.originalFilename, fileHash: d.id })) // Use id as placeholder since we don't have fileHash in summary
+    );
+
+    // Block upload if there are error-level quality issues
+    const errorIssues = qualityIssues.filter(issue => issue.severity === 'error');
+    if (errorIssues.length > 0) {
+      res.status(400).json({
+        error: 'Document quality issues detected',
+        issues: errorIssues,
+      });
+      return;
+    }
+
     // Build blob path and upload
     const docId = uuidv4();
     const ext = path.extname(file.originalname).toLowerCase();
@@ -128,26 +149,12 @@ router.post('/upload', (req: Request, res: Response, next) => {
         fileHash,
         docClass: meta.docClass,
         belongsTo: meta.belongsTo,
+        qualityIssues, // Include all quality issues (warnings and errors)
       },
       lawFirmId,
     );
 
-    // Run processing pipeline (classify → extract → validate)
-    let processingResult = null;
-    try {
-      processingResult = await processDocument(
-        docId,
-        file.buffer,
-        file.originalname,
-        file.mimetype,
-        meta.caseId,
-        lawFirmId,
-      );
-    } catch {
-      // Processing failure doesn't block upload — document stays as 'uploaded' or 'failed'
-    }
-
-    res.status(201).json({ ...doc, processingResult });
+    res.status(201).json(doc);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Upload failed';
     res.status(500).json({ error: message });
@@ -163,6 +170,10 @@ router.get('/', (req: Request, res: Response) => {
     res.status(400).json({ error: 'caseId query parameter is required' });
     return;
   }
+
+  // Verify client has access to this case
+  if (!verifyCaseAccess(req, res, caseId)) return;
+
   const lawFirmId = getLawFirmId(req);
   const docs = listDocuments(caseId, lawFirmId);
   res.json(docs);
@@ -194,6 +205,14 @@ router.get('/:id/download', async (req: Request, res: Response) => {
 router.delete('/:id', (req: Request, res: Response) => {
   const id = paramId(req);
   const lawFirmId = getLawFirmId(req);
+  const doc = getDocument(id, lawFirmId);
+  if (!doc) {
+    res.status(404).json({ error: 'Document not found' });
+    return;
+  }
+  // Verify client has access to this document's case
+  if (!verifyCaseAccess(req, res, doc.caseId)) return;
+
   const deleted = deleteDocument(id, lawFirmId);
   if (!deleted) {
     res.status(404).json({ error: 'Document not found' });
@@ -205,7 +224,7 @@ router.delete('/:id', (req: Request, res: Response) => {
 // ---------------------------------------------------------------
 // GET /api/documents/:id/extraction — latest extraction result
 // ---------------------------------------------------------------
-router.get('/:id/extraction', (req: Request, res: Response) => {
+router.get('/:id/extraction', requireStaff, (req: Request, res: Response) => {
   const id = paramId(req);
   const lawFirmId = getLawFirmId(req);
   const extraction = getLatestExtraction(id, lawFirmId);
@@ -223,7 +242,7 @@ router.get('/:id/extraction', (req: Request, res: Response) => {
 // ---------------------------------------------------------------
 // GET /api/documents/:id/validations — validation results
 // ---------------------------------------------------------------
-router.get('/:id/validations', (req: Request, res: Response) => {
+router.get('/:id/validations', requireStaff, (req: Request, res: Response) => {
   const id = paramId(req);
   const lawFirmId = getLawFirmId(req);
   const validations = listDocumentValidations(id, lawFirmId);
@@ -233,7 +252,7 @@ router.get('/:id/validations', (req: Request, res: Response) => {
 // ---------------------------------------------------------------
 // POST /api/documents/:id/extraction/accept — accept extraction
 // ---------------------------------------------------------------
-router.post('/:id/extraction/accept', (req: Request, res: Response) => {
+router.post('/:id/extraction/accept', requireStaff, (req: Request, res: Response) => {
   const id = paramId(req);
   const lawFirmId = getLawFirmId(req);
   const extraction = getLatestExtraction(id, lawFirmId);
@@ -250,7 +269,7 @@ router.post('/:id/extraction/accept', (req: Request, res: Response) => {
 // ---------------------------------------------------------------
 // POST /api/documents/:id/extraction/correct — submit corrections
 // ---------------------------------------------------------------
-router.post('/:id/extraction/correct', (req: Request, res: Response) => {
+router.post('/:id/extraction/correct', requireStaff, (req: Request, res: Response) => {
   const id = paramId(req);
   const lawFirmId = getLawFirmId(req);
   const { extractedData, notes } = req.body as { extractedData: Record<string, unknown>; notes?: string };
@@ -274,7 +293,7 @@ router.post('/:id/extraction/correct', (req: Request, res: Response) => {
 // ---------------------------------------------------------------
 // POST /api/documents/:id/validations/:vid/dismiss — dismiss a validation
 // ---------------------------------------------------------------
-router.post('/:id/validations/:vid/dismiss', (req: Request, res: Response) => {
+router.post('/:id/validations/:vid/dismiss', requireStaff, (req: Request, res: Response) => {
   const vid = Array.isArray(req.params.vid) ? req.params.vid[0] : req.params.vid;
   const lawFirmId = getLawFirmId(req);
   const userId = req.user && 'userId' in req.user ? req.user.userId : 'unknown';
@@ -287,9 +306,9 @@ router.post('/:id/validations/:vid/dismiss', (req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------
-// POST /api/documents/:id/reprocess — re-run the pipeline
+// POST /api/documents/:id/process — run (or re-run) the pipeline
 // ---------------------------------------------------------------
-router.post('/:id/reprocess', async (req: Request, res: Response) => {
+async function handleProcessDocument(req: Request, res: Response): Promise<void> {
   const id = paramId(req);
   const lawFirmId = getLawFirmId(req);
   const doc = getDocument(id, lawFirmId);
@@ -297,6 +316,9 @@ router.post('/:id/reprocess', async (req: Request, res: Response) => {
     res.status(404).json({ error: 'Document not found' });
     return;
   }
+
+  // Verify client has access to this document's case
+  if (!verifyCaseAccess(req, res, doc.caseId)) return;
 
   const storage = getBlobStorage();
   const content = await storage.download(doc.blobPath);
@@ -311,6 +333,10 @@ router.post('/:id/reprocess', async (req: Request, res: Response) => {
   );
 
   res.json(result);
-});
+}
+
+router.post('/:id/process', handleProcessDocument);
+// Keep /reprocess as an alias for backwards compatibility
+router.post('/:id/reprocess', handleProcessDocument);
 
 export default router;

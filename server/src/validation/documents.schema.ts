@@ -1,12 +1,15 @@
 import { z } from 'zod/v4';
 
 export const DOC_CLASS_VALUES = [
-  'paystub', 'bank_statement_checking', 'bank_statement_savings', 'tax_return',
-  'ira_statement', '401k_statement', 'credit_card_statement', 'payroll_export',
-  'w2', '1099', 'other', 'unclassified',
+  'payStub.us', 'bankStatement.us.checking', 'bankStatement.us.savings', 'tax.us.1040',
+  'ira_statement', '401k_statement', 'creditCard', 'payroll_export',
+  'tax.us.w2', 'tax.us.1099', 'other', 'unclassified',
+  'profit_loss_statement', 'retirement_account', 'collection_letter',
+  'legal_document', 'vehicle_loan_statement', 'mortgage.us', 'social_security_letter',
+  'idDocument', 'social_security_card', 'brokerage_statement', 'vehicle_title',
 ] as const;
 
-export const ALLOWED_EXTENSIONS = ['.pdf', '.csv', '.xlsx', '.txt'] as const;
+export const ALLOWED_EXTENSIONS = ['.pdf', '.csv', '.xlsx', '.txt', '.jpg', '.jpeg', '.png', '.heic', '.webp'] as const;
 export const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
 
 

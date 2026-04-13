@@ -121,10 +121,10 @@ export function validateInternal(
   documentId: string,
 ): ValidationFinding[] {
   switch (docClass) {
-    case 'paystub':
+    case 'payStub.us':
       return validatePaystub(extractedData, documentId);
-    case 'bank_statement_checking':
-    case 'bank_statement_savings':
+    case 'bankStatement.us.checking':
+    case 'bankStatement.us.savings':
       return validateBankStatement(extractedData, documentId);
     default:
       return [];

@@ -25,8 +25,11 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
 
   const res = await fetch(`${BASE}${path}`, {
-    headers,
     ...options,
+    headers: {
+      ...headers,
+      ...(options?.headers as Record<string, string> | undefined),
+    },
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
@@ -34,6 +37,8 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   }
   return res.json();
 }
+
+import type { QuestionnaireData, QuestionnaireMetadata } from '../types/questionnaire';
 
 // ---- Types ----
 
@@ -65,6 +70,8 @@ export interface FormDetail {
   id: string;
   name: string;
   data: Record<string, unknown>;
+  metadata: QuestionnaireMetadata;
+  version: number;
   created_at: string;
   updated_at: string;
 }
@@ -84,15 +91,40 @@ export interface ClientSummary {
   createdAt: string;
 }
 
+export type CaseStatus =
+  | 'intake'
+  | 'documents'
+  | 'review'
+  | 'ready_to_file'
+  | 'filed'
+  | 'discharged'
+  | 'dismissed'
+  | 'closed';
+
 export interface CaseSummary {
   id: string;
   clientId: string;
   clientFirstName: string;
   clientLastName: string;
   chapter: string;
-  status: string;
+  status: CaseStatus;
   filingDate: string | null;
   createdAt: string;
+  progress?: {
+    docs: string;
+    sections: string;
+  };
+  attention?: {
+    count: number;
+    hasErrors: boolean;
+  };
+}
+
+export interface QualityIssue {
+  type: 'duplicate' | 'validation_error' | 'unsupported_format' | 'oversized';
+  message: string;
+  severity: 'error' | 'warning';
+  canRetry: boolean;
 }
 
 export interface DocumentSummary {
@@ -107,6 +139,7 @@ export interface DocumentSummary {
   classificationMethod: string | null;
   createdAt: string;
   processingResult?: ProcessingResult | null;
+  qualityIssues?: QualityIssue[];
 }
 
 export interface ProcessingResult {
@@ -131,12 +164,41 @@ export interface ExtractionResultSummary {
   reviewNotes: string | null;
 }
 
+export interface AutofillSource {
+  documentId: string;
+  docClass: string;
+  confidence: number;
+}
+
+export interface AutofillPatch {
+  fields: Partial<QuestionnaireData>;
+  sources: Record<string, AutofillSource>;
+}
+
 export interface ValidationResultSummary {
   id: string;
   validationType: string;
   severity: 'error' | 'warning' | 'info';
   message: string;
   isDismissed: boolean;
+}
+
+export interface ReviewQueueDocument {
+  id: string;
+  originalFilename: string;
+  docClass: string | null;
+  processingStatus: string;
+  classificationConfidence: number | null;
+  createdAt: string;
+}
+
+export interface ReviewSummary {
+  extractionQueue: ReviewQueueDocument[];
+  validationWarnings: ValidationResultSummary[];
+  counts: {
+    extraction: number;
+    validation: number;
+  };
 }
 
 // ---- API ----
@@ -160,6 +222,8 @@ export const api = {
   // Clients
   listClients: () => request<ClientSummary[]>('/clients'),
 
+  getClient: (id: string) => request<ClientSummary>(`/clients/${id}`),
+
   createClient: (data: {
     firstName: string;
     lastName: string;
@@ -176,7 +240,13 @@ export const api = {
     request<{ success: boolean }>(`/clients/${id}`, { method: 'DELETE' }),
 
   // Cases
-  listCases: () => request<CaseSummary[]>('/cases'),
+  listCases: (clientId?: string, expand?: string[]) => {
+    const params = new URLSearchParams();
+    if (clientId) params.set('clientId', clientId);
+    if (expand && expand.length > 0) params.set('expand', expand.join(','));
+    const query = params.toString();
+    return request<CaseSummary[]>(`/cases${query ? `?${query}` : ''}`);
+  },
 
   getCase: (id: string) =>
     request<Record<string, unknown>>(`/cases/${id}`),
@@ -207,10 +277,11 @@ export const api = {
       body: JSON.stringify({ name, data }),
     }),
 
-  updateForm: (id: string, name: string, data: Record<string, unknown>) =>
-    request<{ id: string; name: string }>(`/forms/${id}`, {
+  updateForm: (id: string, name: string, data: Record<string, unknown>, expectedVersion?: number) =>
+    request<{ id: string; name: string; version: number }>(`/forms/${id}`, {
       method: 'PUT',
       body: JSON.stringify({ name, data }),
+      headers: expectedVersion !== undefined ? { 'If-Match': String(expectedVersion) } : undefined,
     }),
 
   deleteForm: (id: string) =>
@@ -230,7 +301,7 @@ export const api = {
     request<Array<{
       id: string;
       chapter: string;
-      status: string;
+      status: CaseStatus;
       filingDate: string | null;
       createdAt: string;
     }>>('/client-portal/cases'),
@@ -290,8 +361,26 @@ export const api = {
   dismissValidation: (documentId: string, validationId: string) =>
     request<{ success: boolean }>(`/documents/${documentId}/validations/${validationId}/dismiss`, { method: 'POST' }),
 
+  processDocument: (documentId: string) =>
+    request<ProcessingResult>(`/documents/${documentId}/process`, { method: 'POST' }),
+
   reprocessDocument: (documentId: string) =>
     request<ProcessingResult>(`/documents/${documentId}/reprocess`, { method: 'POST' }),
+
+  processAllDocuments: (caseId: string) =>
+    request<{ processed: number; results: Array<{ documentId: string; filename: string; result: ProcessingResult | null; error?: string }> }>(
+      `/cases/${caseId}/process-documents`,
+      { method: 'POST' },
+    ),
+
+  autofillForm: (caseId: string) =>
+    request<AutofillPatch>(`/cases/${caseId}/autofill`, { method: 'POST' }),
+
+  autofillAndMerge: (caseId: string) =>
+    request<{ filledFields: string[]; skippedFields: string[] }>(`/cases/${caseId}/questionnaire/autofill`, { method: 'POST' }),
+
+  getReviewSummary: (caseId: string) =>
+    request<ReviewSummary>(`/cases/${caseId}/review-summary`),
 
   downloadDocument: (id: string, filename: string) => {
     const token = getToken();

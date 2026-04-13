@@ -1,6 +1,7 @@
 import type { ReviewFinding } from '@/api/client';
 import { Button } from './ui/button';
-import { AlertTriangle, AlertCircle, Info, ArrowRight, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { SeverityIcon, SEVERITY_STYLES } from './ui/severity-indicator';
+import { ArrowRight, PanelRightClose, PanelRightOpen } from 'lucide-react';
 
 interface ReviewPanelProps {
   findings: ReviewFinding[];
@@ -10,10 +11,10 @@ interface ReviewPanelProps {
   onFindingClick: (finding: ReviewFinding) => void;
 }
 
-const severityConfig = {
-  error: { icon: AlertCircle, color: 'text-red-600', bg: 'bg-red-50 border-red-200', label: 'Error' },
-  warning: { icon: AlertTriangle, color: 'text-amber-600', bg: 'bg-amber-50 border-amber-200', label: 'Warning' },
-  info: { icon: Info, color: 'text-blue-600', bg: 'bg-blue-50 border-blue-200', label: 'Info' },
+const SEVERITY_LABELS: Record<string, string> = {
+  error: 'Error',
+  warning: 'Warning',
+  info: 'Info',
 };
 
 export function ReviewPanel({ findings, loading, collapsed, onToggle, onFindingClick }: ReviewPanelProps) {
@@ -32,9 +33,9 @@ export function ReviewPanel({ findings, loading, collapsed, onToggle, onFindingC
         <span className="text-xs font-medium [writing-mode:vertical-lr] rotate-180">Review</span>
         {findings.length > 0 && (
           <span className="flex flex-col gap-1 mt-1">
-            {errorCount > 0 && <span className="h-2 w-2 rounded-full bg-red-500" />}
-            {warningCount > 0 && <span className="h-2 w-2 rounded-full bg-amber-500" />}
-            {infoCount > 0 && <span className="h-2 w-2 rounded-full bg-blue-500" />}
+            {errorCount > 0 && <SeverityIcon severity="error" className="h-2.5 w-2.5" />}
+            {warningCount > 0 && <SeverityIcon severity="warning" className="h-2.5 w-2.5" />}
+            {infoCount > 0 && <SeverityIcon severity="info" className="h-2.5 w-2.5" />}
           </span>
         )}
       </button>
@@ -62,23 +63,22 @@ export function ReviewPanel({ findings, loading, collapsed, onToggle, onFindingC
         )}
         {!loading &&
           findings.map((f, i) => {
-            const config = severityConfig[f.severity];
-            const Icon = config.icon;
+            const styles = SEVERITY_STYLES[f.severity];
             return (
               <button
                 key={i}
-                className={`w-full text-left rounded-md border p-3 ${config.bg} hover:opacity-80 transition-opacity cursor-pointer`}
+                className={`w-full text-left rounded-md border p-3 ${styles.bg} ${styles.border} hover:opacity-80 transition-opacity cursor-pointer`}
                 onClick={() => onFindingClick(f)}
               >
                 <div className="flex items-start gap-2">
-                  <Icon className={`h-5 w-5 mt-0.5 shrink-0 ${config.color}`} />
+                  <SeverityIcon severity={f.severity} className="h-5 w-5 mt-0.5 shrink-0" />
                   <div className="flex-1">
-                    <div className={`text-xs font-semibold uppercase ${config.color}`}>
-                      {config.label} — {f.section}
+                    <div className={`text-xs font-semibold uppercase ${styles.text}`}>
+                      {SEVERITY_LABELS[f.severity]} — {f.section}
                     </div>
                     <p className="text-sm mt-1">{f.message}</p>
                   </div>
-                  <ArrowRight className={`h-4 w-4 mt-0.5 shrink-0 ${config.color} opacity-50`} />
+                  <ArrowRight className={`h-4 w-4 mt-0.5 shrink-0 ${styles.text} opacity-50`} />
                 </div>
               </button>
             );

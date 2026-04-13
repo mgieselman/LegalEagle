@@ -4,50 +4,50 @@ import { classifyByRules } from '../services/classification/ruleClassifier';
 describe('Rule Classifier', () => {
   it('classifies paystub by content', () => {
     const result = classifyByRules('document.pdf', 'Employee Pay Statement\nPay Period: 01/01/2026 - 01/15/2026\nGross Pay: $2,500.00');
-    expect(result.docClass).toBe('paystub');
+    expect(result.docClass).toBe('payStub.us');
     expect(result.confidence).toBeGreaterThanOrEqual(0.85);
     expect(result.method).toBe('rule_engine');
   });
 
   it('classifies paystub by filename', () => {
     const result = classifyByRules('paystub-jan-2026.pdf', 'some generic content');
-    expect(result.docClass).toBe('paystub');
+    expect(result.docClass).toBe('payStub.us');
     expect(result.confidence).toBeGreaterThanOrEqual(0.60);
   });
 
   it('classifies W-2 by content', () => {
     const result = classifyByRules('tax-doc.pdf', 'Wage and Tax Statement Form W-2 2025');
-    expect(result.docClass).toBe('w2');
+    expect(result.docClass).toBe('tax.us.w2');
     expect(result.confidence).toBeGreaterThanOrEqual(0.85);
   });
 
   it('classifies W-2 by filename', () => {
     const result = classifyByRules('w2-2025.pdf', '');
-    expect(result.docClass).toBe('w2');
+    expect(result.docClass).toBe('tax.us.w2');
     expect(result.confidence).toBeGreaterThanOrEqual(0.60);
   });
 
   it('classifies 1099 by content', () => {
     const result = classifyByRules('misc.pdf', 'Form 1099-MISC Miscellaneous Income');
-    expect(result.docClass).toBe('1099');
+    expect(result.docClass).toBe('tax.us.1099');
     expect(result.confidence).toBeGreaterThanOrEqual(0.85);
   });
 
   it('classifies tax return by content', () => {
     const result = classifyByRules('return.pdf', 'Form 1040 U.S. Individual Income Tax Return');
-    expect(result.docClass).toBe('tax_return');
+    expect(result.docClass).toBe('tax.us.1040');
     expect(result.confidence).toBeGreaterThanOrEqual(0.85);
   });
 
   it('classifies bank statement (checking) by content', () => {
     const result = classifyByRules('statement.pdf', 'Statement Period 01/01 - 01/31 Checking Account Statement\nBeginning Balance: $5,000\nEnding Balance: $4,200');
-    expect(result.docClass).toBe('bank_statement_checking');
+    expect(result.docClass).toBe('bankStatement.us.checking');
     expect(result.confidence).toBeGreaterThanOrEqual(0.80);
   });
 
   it('classifies credit card statement by content', () => {
     const result = classifyByRules('cc.pdf', 'Credit Card Statement\nPrevious Balance: $1,200\nNew Charges: $350');
-    expect(result.docClass).toBe('credit_card_statement');
+    expect(result.docClass).toBe('creditCard');
     expect(result.confidence).toBeGreaterThanOrEqual(0.85);
   });
 

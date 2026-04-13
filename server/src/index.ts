@@ -11,7 +11,7 @@ import clientPortalRouter from './routes/clientPortal';
 import documentsRouter from './routes/documents';
 import { autoSeed } from './services/autoSeed';
 import { DevAuthProvider } from './auth/devAuthProvider';
-import { createAuthMiddleware } from './auth/middleware';
+import { createAuthMiddleware, requireStaff } from './auth/middleware';
 import { createAuthRouter } from './routes/auth';
 
 const app = express();
@@ -37,7 +37,7 @@ app.use('/api/forms', reviewRouter);
 app.use('/api/forms', downloadRouter);
 app.use('/api/cases', createAuthMiddleware(authProvider));
 app.use('/api/cases', casesRouter);
-app.use('/api/clients', createAuthMiddleware(authProvider));
+app.use('/api/clients', createAuthMiddleware(authProvider), requireStaff);
 app.use('/api/clients', clientsRouter);
 app.use('/api/documents', createAuthMiddleware(authProvider));
 app.use('/api/documents', documentsRouter);

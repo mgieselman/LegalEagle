@@ -1,3 +1,13 @@
+export interface AutofillSource {
+  documentId: string;
+  docClass: string;
+  confidence: number;
+}
+
+export interface QuestionnaireMetadata {
+  autofillSources: Record<string, AutofillSource>; // field path -> source
+}
+
 export interface PriorAddress {
   address: string;
   dateMovedIn: string;
@@ -580,6 +590,7 @@ export type QuestionnaireValue =
 export interface SectionProps {
   data: QuestionnaireData;
   onChange: (path: string, value: QuestionnaireValue) => void;
+  readOnly?: boolean;
 }
 
 export function createEmptyQuestionnaire(): QuestionnaireData {

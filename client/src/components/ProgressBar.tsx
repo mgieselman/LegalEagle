@@ -1,30 +1,12 @@
 import type { QuestionnaireData } from '@/types/questionnaire';
+import { calculateOverallCompletion } from '@/lib/completion';
 
 /**
  * Calculate questionnaire completion percentage.
- * Counts non-empty string fields and non-empty arrays.
+ * Delegates to shared completion utility.
  */
 export function calculateCompletion(data: QuestionnaireData): number {
-  let filled = 0;
-  let total = 0;
-
-  function countValue(val: unknown): void {
-    if (typeof val === 'string') {
-      total++;
-      if (val.trim() !== '') filled++;
-    } else if (Array.isArray(val)) {
-      total++;
-      if (val.length > 0) filled++;
-    } else if (typeof val === 'object' && val !== null) {
-      for (const v of Object.values(val)) {
-        countValue(v);
-      }
-    }
-  }
-
-  countValue(data);
-  if (total === 0) return 0;
-  return Math.round((filled / total) * 100);
+  return calculateOverallCompletion(data);
 }
 
 interface ProgressBarProps {

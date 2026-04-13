@@ -3,3 +3,28 @@ dist/
 *.db
 .env
 server/data/
+
+# Extraction evaluation workspace (legacy R&D — not part of the app)
+Extraction/
+
+# Azure DI eval (contains .env with API keys)
+azure-di-eval/
+
+# Playwright MCP session state
+.playwright-mcp/
+
+# Python extractor venv and bytecode cache
+extractor/.venv/
+extractor/**/__pycache__/
+extractor/**/*.pyc
+
+# Extractor eval output and scratch scripts
+extractor/eval_*/
+extractor/scripts/bench.py
+extractor/scripts/test_extract.py
+extractor/scripts/eval_azure.py
+
+# Scratch / review notes (not part of the app)
+bench_results_*.md
+test_results.md
+classifier-review.md

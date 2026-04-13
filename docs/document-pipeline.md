@@ -1,5 +1,33 @@
 # Document Processing Pipeline
 
+## Implementation Status
+
+This document describes the full designed pipeline. The table below shows what is currently built vs. planned.
+
+| Stage | Status | Notes |
+|---|---|---|
+| Upload (multer, SHA-256 dedup, blob storage) | ✅ Built | `server/src/routes/documents.ts` |
+| Text extraction (pdftext / markitdown / Tesseract) | ✅ Built | `extractor/text_extraction.py` |
+| Two-tier classification (rules → Claude) | ✅ Built | `extractor/classifier.py` |
+| Rule-engine extraction (paystubs, W-2s, bank stmts, 1040s, investments, mortgages) | ✅ Built | `extractor/rule_extractors/` |
+| AI extraction (Claude, Pydantic schemas) | ✅ Built | `extractor/ai_extractor.py` |
+| Two-tier OCR (Marker + Azure DI fallback) | ✅ Built | `extractor/ocr.py` |
+| ID document classification (DL, SSN card via Tesseract) | ✅ Built | `extractor/classifier.py` — `drivers_license`, `social_security_card` |
+| Internal validation (math consistency) | ✅ Built | `server/src/services/validation.ts` |
+| Cross-document validation (10% variance) | ✅ Built | `server/src/services/validation.ts` |
+| Temporal validation (6-month coverage) | ✅ Built | `server/src/services/validation.ts` |
+| Human review UI (accept / correct) | ✅ Built | `client/src/components/DocumentReviewPanel.tsx` |
+| Multi-doc PDF splitting (Stage 3) | ⬜ Not built | Each upload treated as one document |
+| Async job queue | ⬜ Not built | Pipeline runs synchronously on upload |
+| Field-level encryption (SSN, account#) | ⬜ Not built | Stored plain in SQLite/Postgres |
+| Audit log | ⬜ Not built | Schema designed, not wired |
+| Form mapping (petition generation) | ⬜ Not built | Questionnaire mapper built; PDF gen pending |
+| Fraud & inconsistency analysis (Stage 9) | ⬜ Not built | Planned for later phase |
+
+**Extraction architecture:** Classification and extraction run in a standalone Python FastAPI service (`extractor/`) called by the Node.js server via HTTP. The default extraction chain is **Rule → Azure DI → Claude** — rule extractors handle the highest-volume doc classes at zero cost, Azure DI prebuilt models cover doc classes without rule extractors, and Claude is the last resort. The Python service uses pdftext and markitdown for text extraction, Tesseract and Marker for scanned PDFs, and Azure Document Intelligence layout OCR as a low-confidence fallback. See [extraction.md](extraction.md) for the full extraction design.
+
+---
+
 ## Overview
 
 The document pipeline handles the full lifecycle of client-uploaded documents: upload, classification, data extraction, validation, human review, and mapping to bankruptcy form fields. It supports multi-tenant operation (multiple law firms) with isolated storage per client.
@@ -124,12 +152,14 @@ The document pipeline handles the full lifecycle of client-uploaded documents: u
     - ira_statement           │ dismissed_at                    │
     - 401k_statement          │ created_at                      │
     - credit_card_statement   └─────────────────────────────────┘
-    - payroll_export            validation_type:
-    - w2                          - internal_consistency
-    - 1099                        - cross_document
-    - other                       - temporal_gap
-    - unclassified                - duplicate_detected
-                                  - questionnaire_mismatch
+    - mortgage_statement        validation_type:
+    - social_security_letter      - internal_consistency
+    - legal_document              - cross_document
+    - w2                          - temporal_gap
+    - 1099                        - duplicate_detected
+    - drivers_license             - questionnaire_mismatch
+    - social_security_card
+    - unclassified
 
 ┌─────────────────────────────────┐  ┌──────────────────────────────┐
 │     audit_log                   │  │  notifications               │
@@ -345,122 +375,64 @@ interface IBlobStorage {
                            │
                            v
               ┌────────────────────────┐
-              │   2. CLASSIFY          │
-              │   - File extension     │
-              │   - Content sniffing   │
-              │   - Header patterns    │
-              │   - Layout analysis    │
-              │   Returns: doc_class   │
-              │   + confidence         │
+              │   3. SPLIT (if needed) │  ← not yet built; each upload
+              │   - Multi-doc PDFs     │    treated as one document
               └────────────┬───────────┘
+                           │
+                           v  POST /extract
+              ┌────────────────────────────────────────────────────┐
+              │  Python Extractor Service  (extractor/)             │
+              │                                                      │
+              │  Text extraction  ──► Tier 1 OCR (if scanned)      │
+              │       │                                              │
+              │       ▼                                              │
+              │  2. CLASSIFY  rule engine → AI fallback             │
+              │       │                                              │
+              │       ▼                                              │
+              │  4. EXTRACT   rule engine → AI fallback             │
+              │       │                                              │
+              │       ▼  (if confidence < 0.65)                     │
+              │  Tier 2 OCR  Azure Document Intelligence            │
+              │  Re-run classify + extract on better text           │
+              │                                                      │
+              │  Returns ExtractionResult JSON                       │
+              └────────────────────────┬───────────────────────────┘
                            │
                   ┌────────┴────────┐
                   │  Confidence     │
                   │  >= 0.85?       │
-                  ├─── YES ────┐    │
-                  │            │    ├─── NO ──────────────┐
-                  │            │    │                      │
-                  │            v    │                      v
-                  │   Use class    │         ┌────────────────────┐
-                  │                │         │  AI Classification │
-                  │                │         │  (send first page  │
-                  │                │         │   to Claude)       │
-                  │                │         └─────────┬──────────┘
-                  │                │                   │
-                  │                │          Still low confidence?
-                  │                │            │            │
-                  │                │           YES          NO
-                  │                │            │            │
-                  │                │            v            v
-                  │                │    Flag as          Use AI class
-                  │                │    "unclassified"
-                  └────────┬───────┘
-                           │
-                           v
-              ┌────────────────────────┐
-              │   3. SPLIT (if needed) │
-              │   - Detect document    │
-              │     boundaries in      │
-              │     multi-doc PDFs     │
-              │   - Create child docs  │
-              │     for each segment   │
-              └────────────┬───────────┘
-                           │
-                           v
-              ┌────────────────────────┐
-              │   4. EXTRACT           │
-              │   (Rule Engine first)  │
-              └────────────┬───────────┘
-                           │
-                  ┌────────┴────────┐
-                  │                 │
-                  v                 v
-          ┌─────────────┐   ┌─────────────┐
-          │  Structured │   │  PDF / Image │
-          │  (CSV,      │   │  Documents   │
-          │   payroll   │   │              │
-          │   export)   │   │              │
-          └──────┬──────┘   └──────┬──────┘
-                 │                 │
-                 v                 v
-          ┌─────────────┐   ┌─────────────┐
-          │ Parse with  │   │ OCR / text  │
-          │ format-     │   │ extraction  │
-          │ specific    │   │ then rule   │
-          │ rules       │   │ engine      │
-          └──────┬──────┘   └──────┬──────┘
-                 │                 │
-                 └────────┬────────┘
-                          │
-                          v
-                 ┌────────────────┐
-                 │  Confidence    │
-                 │  >= 0.9?       │
-                 ├── YES ──┐     │
-                 │         │     ├── NO ─────────┐
-                 │         v     │                v
-                 │  Auto-accept  │     ┌──────────────────┐
-                 │  Write JSONB  │     │  5. AI EXTRACTION│
-                 │  to DB        │     │  Send doc + class│
-                 │               │     │  to Claude with  │
-                 │               │     │  extraction      │
-                 │               │     │  schema          │
-                 │               │     └────────┬─────────┘
-                 │               │              │
-                 │               │     ┌────────┴────────┐
-                 │               │     │  Confidence     │
-                 │               │     │  >= 0.9?        │
-                 │               │     ├── YES ──┐       │
-                 │               │     │         v       ├── NO ──┐
-                 │               │     │  AI accepted    │        v
-                 │               │     │  Write JSONB    │  Flag for
-                 │               │     │  to DB          │  HUMAN
-                 │               │     │                 │  REVIEW
-                 └───────┬───────┘     └────────┬────────┘        │
-                         │                      │                  │
-                         └──────────┬───────────┘                  │
-                                    │                              │
-                                    v                              v
-                       ┌─────────────────────┐      ┌──────────────────┐
-                       │  6. VALIDATE        │      │  7. HUMAN REVIEW │
-                       │  - Cross-doc checks │      │  - Show extracted│
-                       │  - Date coverage    │      │    data + source │
-                       │  - Internal         │      │  - Edit fields   │
-                       │    consistency      │      │  - Re-upload     │
-                       │  - Duplicate detect │      │  - Accept/reject │
-                       └─────────┬───────────┘      └────────┬─────────┘
-                                 │                           │
-                                 └──────────┬────────────────┘
-                                            │
-                                            v
-                              ┌──────────────────────┐
-                              │  8. FORM MAPPING     │
-                              │  - Aggregate data    │
-                              │  - Calculate CMI     │
-                              │  - Run means test    │
-                              │  - Populate forms    │
-                              │    (122A, Sched I)   │
-                              └──────────────────────┘
+                  ├── YES ──┐       ├── NO ──────────┐
+                  │         v       │                 v
+                  │  Auto-accept    │      ┌──────────────────┐
+                  │  Write JSONB    │      │  7. HUMAN REVIEW │
+                  │  to DB          │      │  - Show extracted│
+                  │                 │      │    data + source │
+                  └────────┬────────┘      │  - Edit fields   │
+                           │               │  - Re-upload     │
+                           │               │  - Accept/reject │
+                           │               └────────┬─────────┘
+                           │                        │
+                           └──────────┬─────────────┘
+                                      │
+                                      v
+                         ┌─────────────────────┐
+                         │  6. VALIDATE        │
+                         │  - Cross-doc checks │
+                         │  - Date coverage    │
+                         │  - Internal         │
+                         │    consistency      │
+                         │  - Duplicate detect │
+                         └─────────┬───────────┘
+                                   │
+                                   v
+                        ┌──────────────────────┐
+                        │  8. FORM MAPPING     │
+                        │  - Aggregate data    │
+                        │  - Calculate CMI     │
+                        │  - Run means test    │
+                        │  - Populate forms    │
+                        │    (122A, Sched I)   │
+                        └──────────────────────┘
 ```
 
 ### Stage Details
@@ -485,20 +457,16 @@ Handles file upload via drag-and-drop or file picker (single or multiple files).
 
 #### Stage 2: Classify
 
-Identifies what type of document was uploaded. Uses a tiered approach:
+Identifies what type of document was uploaded. Handled by the Python extractor service. See [extraction.md — Classification](extraction.md#step-3-classification) for full pattern lists and threshold details.
 
-**Tier 1 — Rule Engine (fast, cheap):**
-- CSV with specific column headers → payroll export
-- PDF with "Pay Statement" / "Earnings Statement" in first page → paystub
-- PDF with bank name + "Statement" + account number pattern → bank statement
-- PDF with "W-2" / "Wage and Tax Statement" → W-2
-- PDF with "1099" → 1099
-- PDF with "Form 1040" → tax return
+**Tier 1 — Rule engine** (confidence ≥ 0.85 → done immediately):
+- Pattern matching against extracted text with two scan windows: title (first 2,000 chars) and content (first 20,000 chars)
+- Covers all doc classes including image-based ID documents (driver's license, SSN card) via Tesseract OCR output
 
-**Tier 2 — AI Classification (if rule engine confidence < 0.85):**
-- Send first page (image or text) to Claude
-- Prompt: "Classify this financial document. Return the type and your confidence."
-- If still < 0.7 confidence → mark as `unclassified`, flag for human review
+**Tier 2 — AI classification** (if rule confidence < 0.85):
+- First 2,000 characters sent to Claude with a list of known doc classes
+- If AI confidence ≥ 0.70 → use AI result
+- Both tiers below threshold → `unclassified`, flagged for human review
 
 #### Stage 3: Split
 
@@ -514,98 +482,33 @@ Many clients will upload a single PDF containing multiple documents (e.g., 6 mon
 
 **If splitting fails or is uncertain:** Process the entire document as a single unit and flag for human review. Better to extract imperfectly than to split incorrectly.
 
-#### Stage 4: Extract (Rule Engine)
+#### Stage 4: Extract
 
-Format-specific parsers that extract structured data:
+Handled by the Python extractor service. See [extraction.md — Step 4: Extraction](extraction.md#step-4-extraction) for schemas, confidence scoring, and behavioral rules.
 
-**CSV / Payroll Exports:**
-```typescript
-interface IDocumentParser {
-  canParse(doc: DocumentRecord, content: Buffer): boolean;
-  parse(doc: DocumentRecord, content: Buffer): Promise<ExtractionResult>;
-}
+**Rule engine first** — fast regex/heuristic extractors for paystubs, W-2s, and bank statements. If confidence ≥ 0.85, result is returned immediately.
 
-interface ExtractionResult {
-  data: Record<string, any>;       // extracted fields
-  confidence: number;               // 0-1 overall confidence
-  fieldConfidences: Record<string, number>;  // per-field confidence
-  warnings: string[];               // issues found during extraction
-}
-```
+**AI extraction fallback** — Claude (`claude-sonnet-4-20250514`) with a per-doc-class JSON template and explicit instructions (ISO dates, no fabrication, omit rather than null). Used when no rule extractor covers the doc class, or rule confidence is below threshold.
 
-**Paystub extraction schema:**
+**Output envelope** (same for all doc classes):
 ```json
 {
-  "employer_name": "string",
-  "employer_address": "string",
-  "employee_name": "string",
-  "pay_period_start": "date",
-  "pay_period_end": "date",
-  "pay_date": "date",
-  "pay_frequency": "weekly | biweekly | semimonthly | monthly",
-  "gross_pay": "number",
-  "federal_tax": "number",
-  "state_tax": "number",
-  "local_tax": "number",
-  "social_security": "number",
-  "medicare": "number",
-  "health_insurance": "number",
-  "dental_insurance": "number",
-  "vision_insurance": "number",
-  "retirement_401k": "number",
-  "other_deductions": [{"name": "string", "amount": "number"}],
-  "net_pay": "number",
-  "ytd_gross": "number",
-  "ytd_net": "number",
-  "hours_worked": "number",
-  "hourly_rate": "number"
-}
-```
-
-**Bank statement extraction schema:**
-```json
-{
-  "institution_name": "string",
-  "account_type": "checking | savings | investment",
-  "account_number_last4": "string",
-  "statement_period_start": "date",
-  "statement_period_end": "date",
-  "beginning_balance": "number",
-  "ending_balance": "number",
-  "total_deposits": "number",
-  "total_withdrawals": "number",
-  "transactions": [
-    {
-      "date": "date",
-      "description": "string",
-      "amount": "number",
-      "type": "credit | debit",
-      "category": "string (optional)"
-    }
-  ]
+  "doc_class": "paystub",
+  "classification_confidence": 0.92,
+  "classification_method": "rule_engine",
+  "extraction_method": "rule_engine",
+  "confidence": 0.88,
+  "data": { "employer_name": "Acme Corp", "gross_pay": 4500.00, ... },
+  "field_confidences": { "employer_name": 0.95, "gross_pay": 0.90 },
+  "warnings": []
 }
 ```
 
 #### Stage 5: AI Extraction
 
-When rule engine confidence < 0.9, send to Claude with the document content and the target extraction schema.
+Folded into Stage 4 — the Python extractor runs rule extraction then AI extraction in the same pipeline step. There is no separate stage.
 
-```typescript
-interface IAIExtractor {
-  extract(
-    doc: DocumentRecord,
-    content: Buffer,
-    docClass: DocumentClass,
-    schema: ExtractionSchema
-  ): Promise<ExtractionResult>;
-}
-```
-
-**Prompt strategy:**
-- Include the extraction schema as a JSON template
-- Include the document class so the AI knows what it's looking at
-- Ask for per-field confidence scores
-- Ask for warnings about anything unusual
+See [extraction.md](extraction.md) for the full extraction design including OCR tiers, classification patterns, rule extractors, AI prompting strategy, and all supported document schemas.
 
 #### Stage 6: Validate
 

@@ -3,7 +3,7 @@
  */
 import { eq, and, isNull } from 'drizzle-orm';
 import db from '../db';
-import { documents, type Document } from '../db/schema';
+import { documents, type Document, type QualityIssue } from '../db/schema';
 
 export interface DocumentSummary {
   id: string;
@@ -16,6 +16,7 @@ export interface DocumentSummary {
   classificationConfidence: number | null;
   classificationMethod: string | null;
   createdAt: string;
+  qualityIssues?: QualityIssue[];
 }
 
 function toSummary(doc: Document): DocumentSummary {
@@ -30,6 +31,7 @@ function toSummary(doc: Document): DocumentSummary {
     classificationConfidence: doc.classificationConfidence,
     classificationMethod: doc.classificationMethod,
     createdAt: doc.createdAt,
+    qualityIssues: doc.qualityIssues ? JSON.parse(doc.qualityIssues as string) : undefined,
   };
 }
 
@@ -74,6 +76,7 @@ export interface CreateDocumentInput {
   docClass?: string;
   belongsTo?: string;
   uploadBatchId?: string;
+  qualityIssues?: QualityIssue[];
 }
 
 export function createDocument(input: CreateDocumentInput, lawFirmId: string): DocumentSummary {
@@ -92,6 +95,7 @@ export function createDocument(input: CreateDocumentInput, lawFirmId: string): D
       docClass: input.docClass as Document['docClass'],
       belongsTo: (input.belongsTo ?? 'debtor') as Document['belongsTo'],
       uploadBatchId: input.uploadBatchId,
+      qualityIssues: input.qualityIssues ? JSON.stringify(input.qualityIssues) : '[]',
       createdAt: now,
     })
     .run();
@@ -107,6 +111,7 @@ export function createDocument(input: CreateDocumentInput, lawFirmId: string): D
     classificationConfidence: null,
     classificationMethod: null,
     createdAt: now,
+    qualityIssues: input.qualityIssues,
   };
 }
 

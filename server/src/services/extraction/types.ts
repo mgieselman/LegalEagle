@@ -1,5 +1,7 @@
+import type { ExtractionData } from './schemas';
+
 export interface ExtractionOutput {
-  data: Record<string, unknown>;
+  data: ExtractionData;
   confidence: number;
   fieldConfidences: Record<string, number>;
   warnings: string[];

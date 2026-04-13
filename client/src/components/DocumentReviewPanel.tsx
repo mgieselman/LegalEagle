@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from './ui/button';
+import { SeverityIcon, ConfidenceScore } from './ui/severity-indicator';
 import { api, type ExtractionResultSummary, type ValidationResultSummary } from '@/api/client';
 import { ProcessingStatusBadge } from './ProcessingStatusBadge';
-import { CheckCircle, Edit3, X, AlertTriangle, Info } from 'lucide-react';
+import { CheckCircle, Edit3, X, AlertTriangle } from 'lucide-react';
 
 interface DocumentReviewPanelProps {
   documentId: string;
@@ -25,12 +26,6 @@ const DOC_CLASS_LABELS: Record<string, string> = {
   payroll_export: 'Payroll Export',
   other: 'Other',
   unclassified: 'Unclassified',
-};
-
-const SEVERITY_ICONS = {
-  error: <AlertTriangle className="h-4 w-4 text-red-500" />,
-  warning: <AlertTriangle className="h-4 w-4 text-amber-500" />,
-  info: <Info className="h-4 w-4 text-blue-500" />,
 };
 
 export function DocumentReviewPanel({ documentId, docClass, processingStatus, onClose, onUpdated }: DocumentReviewPanelProps) {
@@ -101,12 +96,9 @@ export function DocumentReviewPanel({ documentId, docClass, processingStatus, on
           {DOC_CLASS_LABELS[docClass ?? ''] ?? docClass ?? 'Unknown'}
         </span>
         <ProcessingStatusBadge status={processingStatus} />
-        {extraction?.confidenceScore !== null && extraction?.confidenceScore !== undefined && (
-          <span className={`text-xs font-medium ${
-            extraction.confidenceScore >= 0.9 ? 'text-green-600' :
-            extraction.confidenceScore >= 0.7 ? 'text-amber-600' : 'text-red-600'
-          }`}>
-            {(extraction.confidenceScore * 100).toFixed(0)}% confidence
+        {extraction?.confidenceScore != null && (
+          <span className="text-xs font-medium">
+            <ConfidenceScore score={extraction.confidenceScore} /> confidence
           </span>
         )}
       </div>
@@ -154,7 +146,7 @@ export function DocumentReviewPanel({ documentId, docClass, processingStatus, on
           <h5 className="text-sm font-medium">Validation Warnings</h5>
           {activeValidations.map((v) => (
             <div key={v.id} className="flex items-start gap-2 text-xs bg-muted/30 rounded p-2">
-              {SEVERITY_ICONS[v.severity]}
+              <SeverityIcon severity={v.severity} className="h-4 w-4 shrink-0" />
               <span className="flex-1">{v.message}</span>
               <button
                 className="text-muted-foreground hover:text-foreground underline shrink-0"

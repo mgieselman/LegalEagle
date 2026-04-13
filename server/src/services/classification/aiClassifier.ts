@@ -18,13 +18,13 @@ function getClient(): Anthropic {
 
 const SYSTEM_PROMPT = `You are a financial document classifier for a bankruptcy law firm.
 Classify the document into one of these types:
-- paystub: Pay statements, earnings statements, paycheck stubs
-- bank_statement_checking: Checking account statements
-- bank_statement_savings: Savings account statements
-- tax_return: IRS Form 1040 or state tax returns
-- w2: W-2 Wage and Tax Statements
-- 1099: 1099 forms (1099-MISC, 1099-INT, etc.)
-- credit_card_statement: Credit card billing statements
+- payStub.us: Pay statements, earnings statements, paycheck stubs
+- bankStatement.us.checking: Checking account statements
+- bankStatement.us.savings: Savings account statements
+- tax.us.1040: IRS Form 1040 or state tax returns
+- tax.us.w2: W-2 Wage and Tax Statements
+- tax.us.1099: 1099 forms (1099-MISC, 1099-INT, etc.)
+- creditCard: Credit card billing statements
 - ira_statement: IRA account statements
 - 401k_statement: 401(k) retirement plan statements
 - payroll_export: Payroll system CSV/data exports
