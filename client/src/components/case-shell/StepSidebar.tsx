@@ -44,18 +44,26 @@ function SectionList({
   onNavigate?: () => void;
 }) {
   const { navigateToSection } = useSectionNav();
-  let lastGroup: string | undefined;
+  
+  // Use useMemo to track group headers properly without variable reassignment during render
+  const sectionsWithGroupHeaders = useMemo(() => {
+    return sections.reduce<{ lastGroup: string | undefined; items: Array<typeof sections[number] & { subStatus: ReturnType<typeof getSubSectionStatus>; showGroupHeader: boolean | undefined }> }>(
+      (acc, section) => {
+        const subStatus = getSubSectionStatus(section, data);
+        const showGroupHeader = section.group && section.group !== acc.lastGroup;
+        acc.items.push({ ...section, subStatus, showGroupHeader });
+        return { lastGroup: section.group, items: acc.items };
+      },
+      { lastGroup: undefined, items: [] }
+    ).items;
+  }, [sections, data]);
 
   return (
     <div className="ml-6 border-l border-muted space-y-0.5">
-      {sections.map((section) => {
-        const subStatus = getSubSectionStatus(section, data);
-        const showGroupHeader = section.group && section.group !== lastGroup;
-        lastGroup = section.group;
-
+      {sectionsWithGroupHeaders.map((section) => {
         return (
           <div key={section.key}>
-            {showGroupHeader && (
+            {section.showGroupHeader && (
               <div className="px-4 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
                 {section.group}
               </div>

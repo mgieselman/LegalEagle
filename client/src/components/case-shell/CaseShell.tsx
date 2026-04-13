@@ -19,7 +19,7 @@ interface CaseShellProps {
 }
 
 export function CaseShell({ steps, backTo, backLabel, mode }: CaseShellProps) {
-  const { caseData, questionnaire, isLoading, error } = useCaseContext();
+  const { questionnaire, isLoading, error } = useCaseContext();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
 

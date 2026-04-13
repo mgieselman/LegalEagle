@@ -36,7 +36,15 @@ interface ProcessingProgress {
 function ProcessingModal({ progress }: { progress: ProcessingProgress }) {
   const { total, completed, currentFilename, startTime } = progress;
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
-  const elapsed = Date.now() - startTime;
+  
+  // Track elapsed time via state + interval to avoid impure Date.now() calls during render
+  const [elapsed, setElapsed] = useState(() => Date.now() - startTime);
+  useEffect(() => {
+    const updateElapsed = () => setElapsed(Date.now() - startTime);
+    updateElapsed(); // Initial update
+    const id = setInterval(updateElapsed, 1000);
+    return () => clearInterval(id);
+  }, [startTime, completed]);
 
   let etaText = '';
   if (completed > 0 && elapsed > 0) {

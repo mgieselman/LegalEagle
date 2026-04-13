@@ -35,28 +35,55 @@ export function useAutoSave(
   const [status, setStatus] = useState<AutoSaveStatus>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
-  const [currentVersion, setCurrentVersion] = useState<number | null>(questionnaireVersion);
+  // Track version returned from API saves; fall back to prop for initial/external version
+  const [savedVersion, setSavedVersion] = useState<number | null>(null);
+  const currentVersion = savedVersion ?? questionnaireVersion;
 
   const isOnlineRef = useRef(navigator.onLine);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   // Use refs for values that change frequently so saveToAPI stays stable
   const dataRef = useRef(data);
-  dataRef.current = data;
   const formNameRef = useRef(formName);
-  formNameRef.current = formName;
   const onSuccessRef = useRef(onSuccess);
-  onSuccessRef.current = onSuccess;
   const onErrorRef = useRef(onError);
-  onErrorRef.current = onError;
-
   const isDirtyRef = useRef(isDirty);
-  isDirtyRef.current = isDirty;
 
-  // Track online/offline state
+  // Update refs after render to avoid accessing refs during render
   useEffect(() => {
-    function handleOnline() { isOnlineRef.current = true; setIsOnline(true); }
-    function handleOffline() { isOnlineRef.current = false; setIsOnline(false); }
+    dataRef.current = data;
+  }, [data]);
+  
+  useEffect(() => {
+    formNameRef.current = formName;
+  }, [formName]);
+  
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
+  
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
+  
+  useEffect(() => {
+    isDirtyRef.current = isDirty;
+  }, [isDirty]);
+
+  // Refs for retry-on-online (avoids setState-in-effect pattern)
+  const statusRef = useRef(status);
+  useEffect(() => { statusRef.current = status; }, [status]);
+  const saveToAPIRef = useRef<() => Promise<void>>();
+
+  // Track online/offline state + retry save when coming back online
+  useEffect(() => {
+    function handleOnline() {
+      isOnlineRef.current = true;
+      // Retry if we were offline
+      if (statusRef.current === 'offline') {
+        saveToAPIRef.current?.();
+      }
+    }
+    function handleOffline() { isOnlineRef.current = false; }
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -66,13 +93,6 @@ export function useAutoSave(
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-
-  // Update version when prop changes
-  useEffect(() => {
-    if (questionnaireVersion !== null && questionnaireVersion !== currentVersion) {
-      setCurrentVersion(questionnaireVersion);
-    }
-  }, [questionnaireVersion]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Stable save function — uses refs for frequently changing values
   const saveToAPI = useCallback(async (): Promise<void> => {
@@ -94,7 +114,7 @@ export function useAutoSave(
         dataRef.current,
         currentVersion,
       );
-      setCurrentVersion(result.version);
+      setSavedVersion(result.version);
       setStatus('saved');
       setLastSavedAt(new Date());
       setErrorMessage(null);
@@ -127,6 +147,9 @@ export function useAutoSave(
     }
   }, [questionnaireId, currentVersion, readOnly]);
 
+  // Keep ref in sync for event handler access
+  useEffect(() => { saveToAPIRef.current = saveToAPI; }, [saveToAPI]);
+
   // Debounced auto-save — stable because saveToAPI is stable
   const debouncedSave = useDebounceCallback(saveToAPI, debounceMs);
 
@@ -147,13 +170,6 @@ export function useAutoSave(
       debouncedSave.cancel();
     };
   }, [data, questionnaireId, currentVersion, readOnly, debouncedSave]);
-
-  // Retry when coming back online
-  useEffect(() => {
-    if (status === 'offline' && isOnline) {
-      saveToAPI();
-    }
-  }, [status, isOnline, saveToAPI]);
 
   return {
     status,

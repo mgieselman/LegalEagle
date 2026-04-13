@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { FormField, YesNoField, TextAreaField } from '@/components/FormField';
 import { FormShell } from '@/components/FormShell';
@@ -362,7 +362,7 @@ describe('Autofill Field Indicators', () => {
     it('should preserve metadata when saving form updates', async () => {
       vi.mocked(api.updateForm).mockResolvedValue({ version: 2 });
 
-      const { useAutoSave } = require('@/hooks/useAutoSave');
+      const { useAutoSave } = await import('@/hooks/useAutoSave');
       const mockForceSave = vi.fn();
       useAutoSave.mockReturnValue({
         status: 'idle',
@@ -403,16 +403,8 @@ describe('Autofill Field Indicators', () => {
       });
 
       // Simulate metadata update from autofill operation
-      const updatedMetadata = {
-        autofillSources: {
-          ...mockFormData.metadata.autofillSources,
-          netPay: {
-            documentId: 'doc-2',
-            docClass: 'bank_statement_checking',
-            confidence: 0.87,
-          },
-        },
-      };
+      // Metadata update would be tested in integration tests
+      // const updatedMetadata = { autofillSources: { ...mockFormData.metadata.autofillSources, netPay: { documentId: 'doc-2', docClass: 'bank_statement_checking', confidence: 0.87 } } };
 
       // Component should handle dynamic metadata updates
       // This would be tested more thoroughly in integration tests

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { MemoryRouter } from 'react-router';
+// MemoryRouter available if needed for routing tests
 import { TabBar } from '@/components/ui/tab-bar';
 
 // Mock navigation behavior since we can't easily test the actual routing
@@ -8,7 +8,7 @@ vi.mock('react-router', async () => {
   const actual = await vi.importActual('react-router');
   return {
     ...actual,
-    NavLink: ({ children, to, end, className }: any) => {
+    NavLink: ({ children, to, end, className }: { children: React.ReactNode; to: string; end?: boolean; className?: string | ((params: { isActive: boolean }) => string) }) => {
       // Mock active state for the first tab (to='')
       const isActive = to === '';
       const computedClassName = typeof className === 'function' 

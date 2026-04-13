@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useAutoSave, type AutoSaveStatus } from '@/hooks/useAutoSave';
+import { useAutoSave } from '@/hooks/useAutoSave';
 import { api } from '@/api/client';
 
 // Mock the API module
@@ -12,7 +12,7 @@ vi.mock('@/api/client', () => ({
 
 // Mock debounce callback
 vi.mock('usehooks-ts', () => ({
-  useDebounceCallback: vi.fn((fn, delay) => {
+  useDebounceCallback: vi.fn((fn, _delay) => {
     const debouncedFn = vi.fn((...args) => fn(...args));
     debouncedFn.cancel = vi.fn();
     return debouncedFn;

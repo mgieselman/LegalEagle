@@ -9,6 +9,31 @@ import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Plus, ChevronUp, ChevronDown, Search } from 'lucide-react';
 
+// Separate component to avoid recreation during render
+interface SortableHeaderProps {
+  children: React.ReactNode;
+  sortKey: string;
+  sortConfig: { key: string; direction: 'asc' | 'desc' } | null;
+  onSort: (key: string) => void;
+}
+
+const SortableHeader = ({ children, sortKey, sortConfig, onSort }: SortableHeaderProps) => {
+  const isActive = sortConfig?.key === sortKey;
+  return (
+    <button
+      onClick={() => onSort(sortKey)}
+      className="flex items-center gap-1 font-medium text-left hover:text-foreground w-full"
+    >
+      {children}
+      {isActive ? (
+        sortConfig?.direction === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
+      ) : (
+        <div className="h-3 w-3" /> // Placeholder for alignment
+      )}
+    </button>
+  );
+};
+
 export function StaffDashboard() {
   const [cases, setCases] = useState<CaseSummary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -101,23 +126,6 @@ export function StaffDashboard() {
     }));
   };
 
-  const SortableHeader = ({ children, sortKey }: { children: React.ReactNode; sortKey: string }) => {
-    const isActive = sortConfig?.key === sortKey;
-    return (
-      <button
-        onClick={() => handleSort(sortKey)}
-        className="flex items-center gap-1 font-medium text-left hover:text-foreground w-full"
-      >
-        {children}
-        {isActive ? (
-          sortConfig?.direction === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />
-        ) : (
-          <div className="h-3 w-3" /> // Placeholder for alignment
-        )}
-      </button>
-    );
-  };
-
   if (loading) {
     return (
       <div className="p-6">
@@ -177,7 +185,7 @@ export function StaffDashboard() {
       <DataTable
         columns={[
           {
-            header: <SortableHeader sortKey="client">Client</SortableHeader>,
+            header: <SortableHeader sortKey="client" sortConfig={sortConfig} onSort={handleSort}>Client</SortableHeader>,
             headerKey: 'client',
             accessor: (c) => (
               <Link
@@ -189,17 +197,17 @@ export function StaffDashboard() {
             ),
           },
           {
-            header: <SortableHeader sortKey="chapter">Chapter</SortableHeader>,
+            header: <SortableHeader sortKey="chapter" sortConfig={sortConfig} onSort={handleSort}>Chapter</SortableHeader>,
             headerKey: 'chapter',
             accessor: (c) => `Ch. ${c.chapter}`,
           },
           {
-            header: <SortableHeader sortKey="status">Status</SortableHeader>,
+            header: <SortableHeader sortKey="status" sortConfig={sortConfig} onSort={handleSort}>Status</SortableHeader>,
             headerKey: 'status',
             accessor: (c) => <StatusBadge status={c.status} />,
           },
           {
-            header: <SortableHeader sortKey="progress">Progress</SortableHeader>,
+            header: <SortableHeader sortKey="progress" sortConfig={sortConfig} onSort={handleSort}>Progress</SortableHeader>,
             headerKey: 'progress',
             accessor: (c) => (
               <div className="text-xs space-y-1">
@@ -209,7 +217,7 @@ export function StaffDashboard() {
             ),
           },
           {
-            header: <SortableHeader sortKey="attention">Attention</SortableHeader>,
+            header: <SortableHeader sortKey="attention" sortConfig={sortConfig} onSort={handleSort}>Attention</SortableHeader>,
             headerKey: 'attention',
             accessor: (c) => {
               const count = c.attention?.count ?? 0;
@@ -230,7 +238,7 @@ export function StaffDashboard() {
             },
           },
           {
-            header: <SortableHeader sortKey="filingDate">Filing Date</SortableHeader>,
+            header: <SortableHeader sortKey="filingDate" sortConfig={sortConfig} onSort={handleSort}>Filing Date</SortableHeader>,
             headerKey: 'filingDate',
             accessor: (c) => (
               <span className="text-muted-foreground">
@@ -239,7 +247,7 @@ export function StaffDashboard() {
             ),
           },
           {
-            header: <SortableHeader sortKey="created">Created</SortableHeader>,
+            header: <SortableHeader sortKey="created" sortConfig={sortConfig} onSort={handleSort}>Created</SortableHeader>,
             headerKey: 'created',
             accessor: (c) => (
               <span className="text-muted-foreground">

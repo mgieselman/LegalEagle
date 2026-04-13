@@ -28,3 +28,4 @@ extractor/scripts/eval_azure.py
 bench_results_*.md
 test_results.md
 classifier-review.md
+.DS_Store

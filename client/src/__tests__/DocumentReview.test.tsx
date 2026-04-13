@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { DocumentReview } from '@/pages/staff/DocumentReview';
@@ -230,7 +230,7 @@ describe('DocumentReview', () => {
   });
 
   it('should navigate between documents in review queue', async () => {
-    const user = userEvent.setup();
+    userEvent.setup();
     renderDocumentReview();
     
     await waitFor(() => {
@@ -245,7 +245,7 @@ describe('DocumentReview', () => {
   });
 
   it('should handle accept extraction workflow', async () => {
-    const user = userEvent.setup();
+    userEvent.setup();
     vi.mocked(api.acceptExtraction).mockResolvedValue();
     
     renderDocumentReview();

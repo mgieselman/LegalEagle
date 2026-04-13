@@ -39,10 +39,13 @@ export function SectionAccordion({
   useEffect(() => {
     if (!target) return;
     pendingScrollRef.current = target.key;
-    setOpenSections((prev) => {
-      const next = new Set(prev);
-      next.add(target.key);
-      return next;
+    // Async state update to avoid cascading renders
+    Promise.resolve().then(() => {
+      setOpenSections((prev) => {
+        const next = new Set(prev);
+        next.add(target.key);
+        return next;
+      });
     });
   }, [target]);
 

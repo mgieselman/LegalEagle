@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { FormField, YesNoField, TextAreaField } from '@/components/FormField';
@@ -198,7 +198,7 @@ describe('Read-only Lock After Filing', () => {
     });
 
     it('should not trigger auto-save in read-only mode', async () => {
-      const { useAutoSave } = require('@/hooks/useAutoSave');
+      const { useAutoSave } = await import('@/hooks/useAutoSave');
       
       render(<FormShell caseId="case-1" readOnly={true} />);
 

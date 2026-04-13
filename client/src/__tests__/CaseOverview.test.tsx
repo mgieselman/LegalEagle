@@ -14,7 +14,7 @@ vi.mock('@/api/client', () => ({
 
 // Mock ProgressBar component
 vi.mock('@/components/ProgressBar', () => ({
-  ProgressBar: ({ data }: { data: any }) => (
+  ProgressBar: ({ data }: { data: unknown }) => (
     <div data-testid="progress-bar">Progress Bar with data: {JSON.stringify(data)}</div>
   ),
 }));

@@ -19,12 +19,12 @@ vi.mock('react-router', async () => {
     ...actual,
     useParams: vi.fn(),
     Outlet: () => <div data-testid="outlet">Outlet Content</div>,
-    Link: ({ children, to, className }: any) => (
+    Link: ({ children, to, className }: { children: React.ReactNode; to: string; className?: string }) => (
       <a href={to} className={className} data-testid="back-link">
         {children}
       </a>
     ),
-    NavLink: ({ children, to, end, className }: any) => {
+    NavLink: ({ children, to, end, className }: { children: React.ReactNode; to: string; end?: boolean; className?: string | ((params: { isActive: boolean }) => string) }) => {
       const isActive = to === '';
       const computedClassName = typeof className === 'function' 
         ? className({ isActive }) 

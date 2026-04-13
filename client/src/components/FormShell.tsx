@@ -38,15 +38,21 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
   // Surface messages from the hook as toasts
   useEffect(() => {
     if (q.lastMessage) {
-      showToast(q.lastMessage);
-      q.clearMessage();
+      // Async state update to avoid cascading renders
+      Promise.resolve().then(() => {
+        showToast(q.lastMessage);
+        q.clearMessage();
+      });
     }
-  }, [q.lastMessage]);
+  }, [q.lastMessage, q]);
 
   // Reset review UI when review starts
   useEffect(() => {
     if (q.hasReview) {
-      setReviewCollapsed(false);
+      // Async state update to avoid cascading renders  
+      Promise.resolve().then(() => {
+        setReviewCollapsed(false);
+      });
     }
   }, [q.hasReview]);
 
