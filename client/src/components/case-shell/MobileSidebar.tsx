@@ -24,17 +24,17 @@ export function MobileSidebar({ steps, activeStepKey, data, open, onClose }: Mob
     }
   }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (!open) return null;
-
   return (
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-200 md:hidden ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         onClick={onClose}
       />
       {/* Drawer */}
-      <div className="fixed inset-y-0 left-0 w-64 bg-background border-r shadow-lg z-50 md:hidden overflow-y-auto">
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 overflow-y-auto border-r bg-background shadow-lg transition-transform duration-200 md:hidden ${open ? 'translate-x-0' : 'pointer-events-none -translate-x-full'}`}
+      >
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <span className="text-sm font-semibold">Navigation</span>
           <Button variant="ghost" size="icon" onClick={onClose}>

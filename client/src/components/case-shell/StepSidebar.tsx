@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { NavLink } from 'react-router';
 import { ChevronDown, ChevronRight, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -75,7 +75,7 @@ function SectionList({
                 onNavigate?.();
               }}
             >
-              <CompletionIndicator status={subStatus} size="sm" />
+              <CompletionIndicator status={section.subStatus} size="sm" />
               <span className="truncate">{section.label}</span>
             </button>
           </div>

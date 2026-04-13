@@ -523,7 +523,7 @@ Bell icon in the sidebar header, next to the user name. Shows unread count badge
 |---|---|
 | Desktop (≥1024px) | Sidebar nav, split-view document review, right sidebar for AI review |
 | Tablet (768–1023px) | Sidebar collapses to icons, document review stacks vertically, AI review becomes overlay |
-| Mobile (<768px) | Top bar nav (hamburger menu), full-width single column, card layouts for tables, AI review as bottom sheet |
+| Mobile (<768px) | Top bar nav (hamburger menu) with left slide-out sidebar drawer + backdrop, full-width single column, card layouts for tables, AI review as bottom sheet |
 
 ---
 

@@ -244,7 +244,7 @@ Single breakpoint: `md:` (768px).
 
 | Pattern | Mobile (< 768px) | Desktop (>= 768px) |
 |---|---|---|
-| Navigation | Top bar + hamburger | Fixed sidebar |
+| Navigation | Top bar + hamburger opens left slide-out sidebar drawer (with backdrop) | Fixed sidebar |
 | Tables | Card layout (`md:hidden` / `hidden md:block`) | Standard table |
 | Form grids | `grid-cols-1` | `grid-cols-2` |
 | Font size in inputs | `text-base` (prevents iOS zoom) | `text-sm` via `md:text-sm` |
