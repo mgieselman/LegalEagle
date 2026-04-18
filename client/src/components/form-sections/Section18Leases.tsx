@@ -1,7 +1,7 @@
 import { SectionProps } from '@/types/questionnaire';
 import { YesNoField, TextAreaField } from '@/components/FormField';
 
-export function Section18Leases({ data, onChange }: SectionProps) {
+export function Section18Leases({ data, onChange, findings }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 18: Leases &amp; Cooperatives</h3>
@@ -11,6 +11,8 @@ export function Section18Leases({ data, onChange }: SectionProps) {
         label="Do you have any auto leases?"
         value={data.hasAutoLease}
         onChange={(v) => onChange('hasAutoLease', v)}
+        fieldKey="hasAutoLease"
+        findings={findings}
       />
       {data.hasAutoLease === 'yes' && (
         <TextAreaField
@@ -18,6 +20,8 @@ export function Section18Leases({ data, onChange }: SectionProps) {
           value={data.autoLeaseDetails}
           onChange={(v) => onChange('autoLeaseDetails', v)}
           rows={3}
+          fieldKey="autoLeaseDetails"
+          findings={findings}
         />
       )}
 
@@ -27,6 +31,8 @@ export function Section18Leases({ data, onChange }: SectionProps) {
         value={data.cooperativeDetails}
         onChange={(v) => onChange('cooperativeDetails', v)}
         rows={3}
+        fieldKey="cooperativeDetails"
+        findings={findings}
       />
     </div>
   );

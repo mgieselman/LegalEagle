@@ -1,5 +1,5 @@
 import { BankDeposit, SecurityDeposit, PersonalPropertyItem, HouseholdItem, FinancedItem, SectionProps } from '@/types/questionnaire';
-import { FormField } from '@/components/FormField';
+import { FormField, FindingsBanner } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
 const DEFAULT_HOUSEHOLD_ITEMS: HouseholdItem[] = [
@@ -15,7 +15,7 @@ const DEFAULT_HOUSEHOLD_ITEMS: HouseholdItem[] = [
   { name: 'Microwave', howMany: '', yearPurchased: '', value: '' },
 ];
 
-export function Section26Assets({ data, onChange }: SectionProps) {
+export function Section26Assets({ data, onChange, findings }: SectionProps) {
   const householdItems = data.householdItems && data.householdItems.length > 0
     ? data.householdItems
     : DEFAULT_HOUSEHOLD_ITEMS;
@@ -29,9 +29,12 @@ export function Section26Assets({ data, onChange }: SectionProps) {
         value={data.cashOnHand}
         onChange={(v) => onChange('cashOnHand', v)}
         placeholder="$0.00"
+        fieldKey="cashOnHand"
+        findings={findings}
       />
 
       <h4 className="text-md font-medium pt-2">Bank Deposits</h4>
+      <FindingsBanner findings={findings} prefix="bankDeposits" />
       <DynamicTable<BankDeposit>
         columns={[
           { key: 'bankNameAddress', label: 'Bank Name & Address', placeholder: 'Bank name and address' },
@@ -43,6 +46,7 @@ export function Section26Assets({ data, onChange }: SectionProps) {
       />
 
       <h4 className="text-md font-medium pt-2">Security Deposits</h4>
+      <FindingsBanner findings={findings} prefix="securityDeposits" />
       <DynamicTable<SecurityDeposit>
         columns={[
           { key: 'personOrCompany', label: 'Person or Company', placeholder: 'Name' },
@@ -55,6 +59,7 @@ export function Section26Assets({ data, onChange }: SectionProps) {
       />
 
       <h4 className="text-md font-medium pt-2">Personal Property Items</h4>
+      <FindingsBanner findings={findings} prefix="personalPropertyItems" />
       <DynamicTable<PersonalPropertyItem>
         columns={[
           { key: 'item', label: 'Item', placeholder: 'Item description' },
@@ -67,6 +72,7 @@ export function Section26Assets({ data, onChange }: SectionProps) {
       />
 
       <h4 className="text-md font-medium pt-2">Household Items</h4>
+      <FindingsBanner findings={findings} prefix="householdItems" />
       <DynamicTable<HouseholdItem>
         columns={[
           { key: 'name', label: 'Item', placeholder: 'Item name' },
@@ -80,6 +86,7 @@ export function Section26Assets({ data, onChange }: SectionProps) {
       />
 
       <h4 className="text-md font-medium pt-2">Financed Items</h4>
+      <FindingsBanner findings={findings} prefix="financedItems" />
       <DynamicTable<FinancedItem>
         columns={[
           { key: 'item', label: 'Item', placeholder: 'Item description' },

@@ -28,6 +28,10 @@
 - Plausible analytics is optional and controlled by Vite env vars. See [client/README.md](client/README.md) for the current setup.
 - Prefer linking to existing docs instead of duplicating them. Current repo documentation is limited; [client/README.md](client/README.md) contains the client and Plausible notes.
 
+## Model Selection Policy
+
+See [docs/dev/model-selection.md](docs/dev/model-selection.md) for the full guide on which model to use for each agent and task type. Default to **Claude Sonnet 4** when in doubt.
+
 ## Deployment Policy
 
 - Use GitHub Actions as the only deployment mechanism for this repository.

@@ -17,6 +17,8 @@ export interface ReviewFinding {
   severity: 'error' | 'warning' | 'info';
   section: string;
   message: string;
+  /** Dot-notation path to the specific questionnaire field with the issue (e.g. "vehicles[0].approximateValue"). Optional — section-level findings may omit this. */
+  fieldHint?: string;
 }
 
 const SYSTEM_PROMPT = `You are an expert bankruptcy law reviewer analyzing a bankruptcy questionnaire for potential issues, inconsistencies, and red flags. You have deep knowledge of the U.S. Bankruptcy Code.
@@ -67,7 +69,8 @@ Review the provided questionnaire data and check for:
 Respond with a JSON array of findings. Each finding must have:
 - "severity": "error" (likely fraud/violation), "warning" (suspicious, needs attention), or "info" (informational note)
 - "section": the questionnaire section name (e.g., "Vehicles", "Income", "Gifts & Transfers")
-- "message": a clear, specific explanation of the issue
+- "message": a clear, specific, human-readable explanation of the issue (1-2 sentences max)
+- "fieldHint": (optional) the exact dot-notation JSON path to the specific field that has the issue, using the field names as they appear in the questionnaire data provided. Only include this when the issue can be pinpointed to a single field. Examples: "vehicles[0].approximateValue", "cashOnHand", "ssn", "incomeThisYear.youAmount", "studentLoan.lender", "refundFederal"
 
 If the form is mostly empty, note that as an info finding but still check whatever data is present.
 Return ONLY the JSON array, no other text.`;

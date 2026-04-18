@@ -53,7 +53,9 @@ If no mode is provided, default to `full`.
   - In `full` or `strict`, run relevant tests when practical.
 - For `extractor` changes:
   - Run the smallest relevant checks/tests for touched modules.
+  - `cd extractor && python -m pytest tests/ -x -q` for affected test files.
   - Avoid heavy benchmark/eval runs unless requested.
+  - Note: extractor has a separate deploy workflow (`deploy-extractor.yml`) — flag if extractor changes are included.
 
 4. Apply safe auto-fixes when deterministic.
 - Use non-destructive, deterministic fixes only (for example lint auto-fix where supported).

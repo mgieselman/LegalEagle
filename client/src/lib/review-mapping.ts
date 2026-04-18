@@ -47,6 +47,19 @@ export function sectionNameToKey(sectionName: string): string | null {
 }
 
 /**
+ * Returns all findings that map to a given section key.
+ */
+export function findingsForSection(
+  key: string,
+  findings: ReviewFinding[],
+): ReviewFinding[] {
+  return findings.filter((f) => {
+    const mappedKey = sectionNameToKey(f.section) || sectionNameToKey(f.message);
+    return mappedKey === key;
+  });
+}
+
+/**
  * Compute the worst severity among findings that map to a given section key.
  */
 export function sectionFindingSeverity(

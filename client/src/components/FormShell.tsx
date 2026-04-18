@@ -4,8 +4,9 @@ import { Select } from './ui/select';
 import { SEVERITY_STYLES, SeverityIcon } from './ui/severity-indicator';
 import { AutoSaveIndicator } from './ui/auto-save-indicator';
 import { ReviewPanel } from './ReviewPanel';
-import { sectionNameToKey, sectionFindingSeverity } from '@/lib/review-mapping';
+import { sectionNameToKey, sectionFindingSeverity, findingsForSection } from '@/lib/review-mapping';
 import { ALL_SECTIONS } from '@/lib/section-registry';
+import { getSectionStatus } from '@/lib/completion';
 import type { ReviewFinding } from '@/api/client';
 import { ChevronDown, ChevronRight, Plus, Save, Search, Download, Menu, X } from 'lucide-react';
 import { ProgressBar } from './ProgressBar';
@@ -213,14 +214,16 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
             const isOpen = openSections.has(key);
             const severity = sectionFindingSeverity(key, q.findings);
             const isHighlighted = highlightedSection === key;
+            const sectionStatus = getSectionStatus(q.data, key);
             const severityBorder = severity
               ? `${SEVERITY_STYLES[severity].border} border-2`
               : 'border';
             const highlightClass = isHighlighted ? 'ring-2 ring-offset-2 ring-primary transition-all' : '';
+            const completeBg = sectionStatus === 'complete' ? 'bg-green-50 dark:bg-green-950/20' : '';
             return (
               <div key={key} id={`section-${key}`} className={`rounded-lg overflow-hidden ${severityBorder} ${highlightClass}`}>
                 <button
-                  className="w-full flex items-center gap-2 px-4 py-3 text-left font-medium hover:bg-muted/50 transition-colors cursor-pointer"
+                  className={`w-full flex items-center gap-2 px-4 py-3 text-left font-medium hover:bg-muted/50 transition-colors cursor-pointer ${completeBg}`}
                   onClick={() => toggleSection(key)}
                 >
                   {isOpen ? (
@@ -236,7 +239,7 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
                 {isOpen && (
                   <div className="px-4 pb-4">
                     <ErrorBoundary sectionName={title}>
-                      <Component data={q.data} onChange={q.handleChange} readOnly={q.readOnly} />
+                      <Component data={q.data} onChange={q.handleChange} readOnly={q.readOnly} findings={findingsForSection(key, q.findings)} />
                     </ErrorBoundary>
                   </div>
                 )}

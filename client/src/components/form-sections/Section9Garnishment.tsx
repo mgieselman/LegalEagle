@@ -1,8 +1,8 @@
 import { ForeclosureEntry, GarnishmentEntry, SectionProps } from '@/types/questionnaire';
-import { YesNoField } from '@/components/FormField';
+import { YesNoField, FindingsBanner } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-export function Section9Garnishment({ data, onChange }: SectionProps) {
+export function Section9Garnishment({ data, onChange, findings }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 9: Garnishment &amp; Foreclosure</h3>
@@ -11,10 +11,13 @@ export function Section9Garnishment({ data, onChange }: SectionProps) {
         label="Has any property been foreclosed or sold at a tax sale?"
         value={data.foreclosureOrSale}
         onChange={(v) => onChange('foreclosureOrSale', v)}
+        fieldKey="foreclosureOrSale"
+        findings={findings}
       />
       {data.foreclosureOrSale === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Foreclosures / Tax Sales</h4>
+          <FindingsBanner findings={findings} prefix="foreclosures" />
           <DynamicTable<ForeclosureEntry>
             columns={[
               { key: 'property', label: 'Property' },
@@ -33,10 +36,13 @@ export function Section9Garnishment({ data, onChange }: SectionProps) {
         label="Have your wages or bank account been garnished?"
         value={data.garnished}
         onChange={(v) => onChange('garnished', v)}
+        fieldKey="garnished"
+        findings={findings}
       />
       {data.garnished === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Garnishments</h4>
+          <FindingsBanner findings={findings} prefix="garnishments" />
           <DynamicTable<GarnishmentEntry>
             columns={[
               { key: 'creditorName', label: 'Creditor Name' },

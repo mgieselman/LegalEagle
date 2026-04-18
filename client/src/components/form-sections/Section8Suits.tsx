@@ -1,5 +1,5 @@
 import { LawsuitEntry, CriminalCase, AdminCase, SectionProps } from '@/types/questionnaire';
-import { YesNoField, TextAreaField } from '@/components/FormField';
+import { YesNoField, TextAreaField, FindingsBanner } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
 const lawsuitColumns = [
@@ -15,15 +15,16 @@ const createEmptyLawsuit = (): LawsuitEntry => ({
   caseName: '', caseNo: '', court: '', typeOfCase: '', result: '', amount: '',
 });
 
-export function Section8Suits({ data, onChange }: SectionProps) {
+export function Section8Suits({ data, onChange, findings }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 8: Suits &amp; Legal Actions</h3>
 
-      <YesNoField label="Have you been sued?" value={data.beenSued} onChange={(v) => onChange('beenSued', v)} />
+      <YesNoField label="Have you been sued?" value={data.beenSued} onChange={(v) => onChange('beenSued', v)} fieldKey="beenSued" findings={findings} />
       {data.beenSued === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Lawsuits Against You</h4>
+          <FindingsBanner findings={findings} prefix="lawsuits" />
           <DynamicTable<LawsuitEntry>
             columns={lawsuitColumns}
             rows={data.lawsuits}
@@ -33,12 +34,13 @@ export function Section8Suits({ data, onChange }: SectionProps) {
         </div>
       )}
 
-      <YesNoField label="Did any suit result in a lien on your property?" value={data.suitResultedInLien} onChange={(v) => onChange('suitResultedInLien', v)} />
+      <YesNoField label="Did any suit result in a lien on your property?" value={data.suitResultedInLien} onChange={(v) => onChange('suitResultedInLien', v)} fieldKey="suitResultedInLien" findings={findings} />
 
-      <YesNoField label="Have you sued others?" value={data.hasSuedOthers} onChange={(v) => onChange('hasSuedOthers', v)} />
+      <YesNoField label="Have you sued others?" value={data.hasSuedOthers} onChange={(v) => onChange('hasSuedOthers', v)} fieldKey="hasSuedOthers" findings={findings} />
       {data.hasSuedOthers === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Suits You Filed</h4>
+          <FindingsBanner findings={findings} prefix="suitsFiled" />
           <DynamicTable<LawsuitEntry>
             columns={lawsuitColumns}
             rows={data.suitsFiled}
@@ -48,10 +50,11 @@ export function Section8Suits({ data, onChange }: SectionProps) {
         </div>
       )}
 
-      <YesNoField label="Have you been charged with a crime?" value={data.criminalCharges} onChange={(v) => onChange('criminalCharges', v)} />
+      <YesNoField label="Have you been charged with a crime?" value={data.criminalCharges} onChange={(v) => onChange('criminalCharges', v)} fieldKey="criminalCharges" findings={findings} />
       {data.criminalCharges === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Criminal Cases</h4>
+          <FindingsBanner findings={findings} prefix="criminalCases" />
           <DynamicTable<CriminalCase>
             columns={[
               { key: 'caseNo', label: 'Case No.' },
@@ -67,10 +70,11 @@ export function Section8Suits({ data, onChange }: SectionProps) {
         </div>
       )}
 
-      <YesNoField label="Any administrative cases (tax court, workers comp, etc.)?" value={data.adminCases} onChange={(v) => onChange('adminCases', v)} />
+      <YesNoField label="Any administrative cases (tax court, workers comp, etc.)?" value={data.adminCases} onChange={(v) => onChange('adminCases', v)} fieldKey="adminCases" findings={findings} />
       {data.adminCases === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Administrative Cases</h4>
+          <FindingsBanner findings={findings} prefix="adminCaseEntries" />
           <DynamicTable<AdminCase>
             columns={[
               { key: 'caseName', label: 'Case Name' },
@@ -86,9 +90,9 @@ export function Section8Suits({ data, onChange }: SectionProps) {
         </div>
       )}
 
-      <YesNoField label="Do you have a possible lawsuit you could file?" value={data.possibleLawsuit} onChange={(v) => onChange('possibleLawsuit', v)} />
+      <YesNoField label="Do you have a possible lawsuit you could file?" value={data.possibleLawsuit} onChange={(v) => onChange('possibleLawsuit', v)} fieldKey="possibleLawsuit" findings={findings} />
       {data.possibleLawsuit === 'yes' && (
-        <TextAreaField label="Details" value={data.possibleLawsuitDetails} onChange={(v) => onChange('possibleLawsuitDetails', v)} />
+        <TextAreaField label="Details" value={data.possibleLawsuitDetails} onChange={(v) => onChange('possibleLawsuitDetails', v)} fieldKey="possibleLawsuitDetails" findings={findings} />
       )}
     </div>
   );

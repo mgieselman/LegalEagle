@@ -1,8 +1,8 @@
 import { PriorBankruptcy, SectionProps } from '@/types/questionnaire';
-import { YesNoField, TextAreaField } from '@/components/FormField';
+import { YesNoField, TextAreaField, FindingsBanner } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-export function Section2PriorBankruptcy({ data, onChange }: SectionProps) {
+export function Section2PriorBankruptcy({ data, onChange, findings }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 2: Prior Bankruptcy</h3>
@@ -11,11 +11,14 @@ export function Section2PriorBankruptcy({ data, onChange }: SectionProps) {
         label="Have you ever filed bankruptcy before?"
         value={data.priorBankruptcy}
         onChange={(v) => onChange('priorBankruptcy', v)}
+        fieldKey="priorBankruptcy"
+        findings={findings}
       />
 
       {data.priorBankruptcy === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Prior Bankruptcies</h4>
+          <FindingsBanner findings={findings} prefix="priorBankruptcies" />
           <DynamicTable<PriorBankruptcy>
             columns={[
               { key: 'chapter', label: 'Chapter', placeholder: 'e.g. 7, 13' },
@@ -36,6 +39,8 @@ export function Section2PriorBankruptcy({ data, onChange }: SectionProps) {
         label="Has anyone else filed bankruptcy on your home?"
         value={data.otherBankruptcyOnHome}
         onChange={(v) => onChange('otherBankruptcyOnHome', v)}
+        fieldKey="otherBankruptcyOnHome"
+        findings={findings}
       />
 
       {data.otherBankruptcyOnHome === 'yes' && (
@@ -43,6 +48,8 @@ export function Section2PriorBankruptcy({ data, onChange }: SectionProps) {
           label="Details"
           value={data.otherBankruptcyDetails}
           onChange={(v) => onChange('otherBankruptcyDetails', v)}
+          fieldKey="otherBankruptcyDetails"
+          findings={findings}
         />
       )}
     </div>

@@ -1,7 +1,8 @@
 import { UnsecuredDebt, SectionProps } from '@/types/questionnaire';
+import { FindingsBanner } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-export function Section25UnsecuredDebts({ data, onChange }: SectionProps) {
+export function Section25UnsecuredDebts({ data, onChange, findings }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 25: Unsecured Debts</h3>
@@ -10,6 +11,7 @@ export function Section25UnsecuredDebts({ data, onChange }: SectionProps) {
         List all unsecured debts (credit cards, medical bills, personal loans, etc.)
       </p>
 
+      <FindingsBanner findings={findings} prefix="unsecuredDebts" />
       <DynamicTable<UnsecuredDebt>
         columns={[
           { key: 'creditorName', label: 'Creditor Name', placeholder: 'Creditor name' },

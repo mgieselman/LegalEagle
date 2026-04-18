@@ -45,11 +45,12 @@ If mode is omitted, default to `strict`.
 - Push current branch to `origin`.
 - If push fails, stop and report exact error.
 
-5. Monitor deployment workflow.
+5. Monitor deployment workflow(s).
 - Poll GitHub Actions run status for workflow `Build and Deploy to Azure` after push.
+- If `extractor/` files were changed, also monitor `Build and Deploy Extractor to Azure` (`deploy-extractor.yml`).
 - Prefer GitHub API endpoint for latest runs on the branch.
 - Report run number, status, conclusion, and failing step when applicable.
-- Continue until run is `completed` with `success` or `failure`.
+- Continue until all triggered runs are `completed` with `success` or `failure`.
 
 6. Verify site health.
 - Check `https://app-legaleagle.azurewebsites.net` (or domain configured in workflow env).

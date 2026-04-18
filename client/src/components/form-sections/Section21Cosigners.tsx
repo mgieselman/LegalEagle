@@ -1,8 +1,8 @@
 import { CosignerEntry, CosignedDebt, BorrowedForOther, CollateralOnCosigned, SectionProps } from '@/types/questionnaire';
-import { YesNoField } from '@/components/FormField';
+import { YesNoField, FindingsBanner } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-export function Section21Cosigners({ data, onChange }: SectionProps) {
+export function Section21Cosigners({ data, onChange, findings }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 21: Cosigners</h3>
@@ -11,61 +11,77 @@ export function Section21Cosigners({ data, onChange }: SectionProps) {
         label="Has anyone cosigned for you?"
         value={data.hasCosigners}
         onChange={(v) => onChange('hasCosigners', v)}
+        fieldKey="hasCosigners"
+        findings={findings}
       />
       {data.hasCosigners === 'yes' && (
-        <DynamicTable<CosignerEntry>
-          columns={[
-            { key: 'creditorNameAddress', label: 'Creditor Name & Address', placeholder: 'Name and address' },
-            { key: 'cosignerNameAddress', label: 'Cosigner Name & Address', placeholder: 'Name and address' },
-            { key: 'debts', label: 'Debts', placeholder: 'Description of debts' },
-          ]}
-          rows={data.cosigners}
-          onChange={(rows) => onChange('cosigners', rows)}
-          createEmpty={() => ({ creditorNameAddress: '', cosignerNameAddress: '', debts: '' })}
-        />
+        <>
+          <FindingsBanner findings={findings} prefix="cosigners" />
+          <DynamicTable<CosignerEntry>
+            columns={[
+              { key: 'creditorNameAddress', label: 'Creditor Name & Address', placeholder: 'Name and address' },
+              { key: 'cosignerNameAddress', label: 'Cosigner Name & Address', placeholder: 'Name and address' },
+              { key: 'debts', label: 'Debts', placeholder: 'Description of debts' },
+            ]}
+            rows={data.cosigners}
+            onChange={(rows) => onChange('cosigners', rows)}
+            createEmpty={() => ({ creditorNameAddress: '', cosignerNameAddress: '', debts: '' })}
+          />
+        </>
       )}
 
       <YesNoField
         label="Have you cosigned for others?"
         value={data.cosignedForOthers}
         onChange={(v) => onChange('cosignedForOthers', v)}
+        fieldKey="cosignedForOthers"
+        findings={findings}
       />
       {data.cosignedForOthers === 'yes' && (
-        <DynamicTable<CosignedDebt>
-          columns={[
-            { key: 'creditorNameAddress', label: 'Creditor Name & Address', placeholder: 'Name and address' },
-            { key: 'dateOfDebt', label: 'Date of Debt', placeholder: 'MM/YYYY' },
-            { key: 'amountOwing', label: 'Amount Owing', placeholder: '$0.00' },
-            { key: 'personCosignedFor', label: 'Person Cosigned For', placeholder: 'Name' },
-          ]}
-          rows={data.cosignedDebts}
-          onChange={(rows) => onChange('cosignedDebts', rows)}
-          createEmpty={() => ({ creditorNameAddress: '', dateOfDebt: '', amountOwing: '', personCosignedFor: '' })}
-        />
+        <>
+          <FindingsBanner findings={findings} prefix="cosignedDebts" />
+          <DynamicTable<CosignedDebt>
+            columns={[
+              { key: 'creditorNameAddress', label: 'Creditor Name & Address', placeholder: 'Name and address' },
+              { key: 'dateOfDebt', label: 'Date of Debt', placeholder: 'MM/YYYY' },
+              { key: 'amountOwing', label: 'Amount Owing', placeholder: '$0.00' },
+              { key: 'personCosignedFor', label: 'Person Cosigned For', placeholder: 'Name' },
+            ]}
+            rows={data.cosignedDebts}
+            onChange={(rows) => onChange('cosignedDebts', rows)}
+            createEmpty={() => ({ creditorNameAddress: '', dateOfDebt: '', amountOwing: '', personCosignedFor: '' })}
+          />
+        </>
       )}
 
       <YesNoField
         label="Have you borrowed money for others?"
         value={data.borrowedForOthers}
         onChange={(v) => onChange('borrowedForOthers', v)}
+        fieldKey="borrowedForOthers"
+        findings={findings}
       />
       {data.borrowedForOthers === 'yes' && (
-        <DynamicTable<BorrowedForOther>
-          columns={[
-            { key: 'creditorNameAddress', label: 'Creditor Name & Address', placeholder: 'Name and address' },
-            { key: 'collectionAgent', label: 'Collection Agent', placeholder: 'Agent name' },
-            { key: 'dateOfDebt', label: 'Date of Debt', placeholder: 'MM/YYYY' },
-            { key: 'whichSpouseOwes', label: 'Which Spouse Owes', placeholder: 'Husband/Wife/Both' },
-            { key: 'forWhat', label: 'For What', placeholder: 'Purpose' },
-            { key: 'currentAmount', label: 'Current Amount', placeholder: '$0.00' },
-          ]}
-          rows={data.borrowedForOtherEntries}
-          onChange={(rows) => onChange('borrowedForOtherEntries', rows)}
-          createEmpty={() => ({ creditorNameAddress: '', collectionAgent: '', dateOfDebt: '', whichSpouseOwes: '', forWhat: '', currentAmount: '' })}
-        />
+        <>
+          <FindingsBanner findings={findings} prefix="borrowedForOtherEntries" />
+          <DynamicTable<BorrowedForOther>
+            columns={[
+              { key: 'creditorNameAddress', label: 'Creditor Name & Address', placeholder: 'Name and address' },
+              { key: 'collectionAgent', label: 'Collection Agent', placeholder: 'Agent name' },
+              { key: 'dateOfDebt', label: 'Date of Debt', placeholder: 'MM/YYYY' },
+              { key: 'whichSpouseOwes', label: 'Which Spouse Owes', placeholder: 'Husband/Wife/Both' },
+              { key: 'forWhat', label: 'For What', placeholder: 'Purpose' },
+              { key: 'currentAmount', label: 'Current Amount', placeholder: '$0.00' },
+            ]}
+            rows={data.borrowedForOtherEntries}
+            onChange={(rows) => onChange('borrowedForOtherEntries', rows)}
+            createEmpty={() => ({ creditorNameAddress: '', collectionAgent: '', dateOfDebt: '', whichSpouseOwes: '', forWhat: '', currentAmount: '' })}
+          />
+        </>
       )}
 
       <h4 className="text-md font-medium pt-2">Collateral on Cosigned Debts</h4>
+      <FindingsBanner findings={findings} prefix="collateralOnCosigned" />
       <DynamicTable<CollateralOnCosigned>
         columns={[
           { key: 'creditor', label: 'Creditor', placeholder: 'Creditor name' },
@@ -79,3 +95,4 @@ export function Section21Cosigners({ data, onChange }: SectionProps) {
     </div>
   );
 }
+

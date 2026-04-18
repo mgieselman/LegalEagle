@@ -25,7 +25,7 @@ function createEmptyVehicle(): VehicleEntry {
   };
 }
 
-export function Section27Vehicles({ data, onChange }: SectionProps) {
+export function Section27Vehicles({ data, onChange, findings }: SectionProps) {
   const vehicles = data.vehicles || [];
 
   const addVehicle = () => {
@@ -67,54 +67,72 @@ export function Section27Vehicles({ data, onChange }: SectionProps) {
               value={vehicle.makeYearModel}
               onChange={(v) => updateVehicle(index, 'makeYearModel', v)}
               placeholder="e.g. 2018 Honda Civic"
+              fieldKey={`vehicles[${index}].makeYearModel`}
+              findings={findings}
             />
             <FormField
               label="Year Purchased"
               value={vehicle.yearPurchased}
               onChange={(v) => updateVehicle(index, 'yearPurchased', v)}
               placeholder="YYYY"
+              fieldKey={`vehicles[${index}].yearPurchased`}
+              findings={findings}
             />
             <FormField
               label="Lender Name"
               value={vehicle.lenderName}
               onChange={(v) => updateVehicle(index, 'lenderName', v)}
               placeholder="Lender name"
+              fieldKey={`vehicles[${index}].lenderName`}
+              findings={findings}
             />
             <FormField
               label="Lender Address"
               value={vehicle.lenderAddress}
               onChange={(v) => updateVehicle(index, 'lenderAddress', v)}
               placeholder="Lender address"
+              fieldKey={`vehicles[${index}].lenderAddress`}
+              findings={findings}
             />
             <FormField
               label="Loan Number"
               value={vehicle.loanNumber}
               onChange={(v) => updateVehicle(index, 'loanNumber', v)}
               placeholder="Loan #"
+              fieldKey={`vehicles[${index}].loanNumber`}
+              findings={findings}
             />
             <FormField
               label="Interest Rate (%)"
               value={vehicle.percentageRate}
               onChange={(v) => updateVehicle(index, 'percentageRate', v)}
               placeholder="e.g. 5.9"
+              fieldKey={`vehicles[${index}].percentageRate`}
+              findings={findings}
             />
             <FormField
               label="Mileage"
               value={vehicle.mileage}
               onChange={(v) => updateVehicle(index, 'mileage', v)}
               placeholder="e.g. 45000"
+              fieldKey={`vehicles[${index}].mileage`}
+              findings={findings}
             />
             <FormField
               label="Condition"
               value={vehicle.condition}
               onChange={(v) => updateVehicle(index, 'condition', v)}
               placeholder="Good / Fair / Poor"
+              fieldKey={`vehicles[${index}].condition`}
+              findings={findings}
             />
             <FormField
               label="Approximate Value"
               value={vehicle.approximateValue}
               onChange={(v) => updateVehicle(index, 'approximateValue', v)}
               placeholder="$0.00"
+              fieldKey={`vehicles[${index}].approximateValue`}
+              findings={findings}
             />
           </div>
 

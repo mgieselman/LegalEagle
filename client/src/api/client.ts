@@ -80,6 +80,8 @@ export interface ReviewFinding {
   severity: 'error' | 'warning' | 'info';
   section: string;
   message: string;
+  /** Dot-notation path to the specific questionnaire field with the issue (e.g. "vehicles[0].approximateValue"). Optional — section-level findings may omit this. */
+  fieldHint?: string;
 }
 
 export interface ClientSummary {

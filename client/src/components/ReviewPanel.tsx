@@ -77,6 +77,9 @@ export function ReviewPanel({ findings, loading, collapsed, onToggle, onFindingC
                       {SEVERITY_LABELS[f.severity]} — {f.section}
                     </div>
                     <p className="text-sm mt-1">{f.message}</p>
+                    {f.fieldHint && (
+                      <p className="text-xs mt-1 text-muted-foreground font-mono">{f.fieldHint}</p>
+                    )}
                   </div>
                   <ArrowRight className={`h-4 w-4 mt-0.5 shrink-0 ${styles.text} opacity-50`} />
                 </div>

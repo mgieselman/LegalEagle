@@ -1,8 +1,8 @@
 import { BusinessInfo, EmployeeOwed, SectionProps } from '@/types/questionnaire';
-import { YesNoField, TextAreaField } from '@/components/FormField';
+import { YesNoField, TextAreaField, FindingsBanner } from '@/components/FormField';
 import { DynamicTable } from '@/components/DynamicTable';
 
-export function Section4BusinessEmployment({ data, onChange }: SectionProps) {
+export function Section4BusinessEmployment({ data, onChange, findings }: SectionProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Section 4: Business &amp; Employment</h3>
@@ -11,11 +11,14 @@ export function Section4BusinessEmployment({ data, onChange }: SectionProps) {
         label="Have you been in business in the last 6 years?"
         value={data.inBusiness}
         onChange={(v) => onChange('inBusiness', v)}
+        fieldKey="inBusiness"
+        findings={findings}
       />
 
       {data.inBusiness === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Business Information</h4>
+          <FindingsBanner findings={findings} prefix="businessInfo" />
           <DynamicTable<BusinessInfo>
             columns={[
               { key: 'name', label: 'Business Name' },
@@ -34,6 +37,8 @@ export function Section4BusinessEmployment({ data, onChange }: SectionProps) {
         label="Does the business owe any debts?"
         value={data.businessDebts}
         onChange={(v) => onChange('businessDebts', v)}
+        fieldKey="businessDebts"
+        findings={findings}
       />
 
       {data.businessDebts === 'yes' && (
@@ -41,6 +46,8 @@ export function Section4BusinessEmployment({ data, onChange }: SectionProps) {
           label="Business Debt Details"
           value={data.businessDebtsDetails}
           onChange={(v) => onChange('businessDebtsDetails', v)}
+          fieldKey="businessDebtsDetails"
+          findings={findings}
         />
       )}
 
@@ -48,11 +55,14 @@ export function Section4BusinessEmployment({ data, onChange }: SectionProps) {
         label="Do you owe any employees wages?"
         value={data.owesEmployeeWages}
         onChange={(v) => onChange('owesEmployeeWages', v)}
+        fieldKey="owesEmployeeWages"
+        findings={findings}
       />
 
       {data.owesEmployeeWages === 'yes' && (
         <div>
           <h4 className="text-sm font-medium mb-2">Employees Owed</h4>
+          <FindingsBanner findings={findings} prefix="employeesOwed" />
           <DynamicTable<EmployeeOwed>
             columns={[
               { key: 'name', label: 'Name' },
@@ -72,6 +82,8 @@ export function Section4BusinessEmployment({ data, onChange }: SectionProps) {
         label="Have you received money to purchase goods/services not yet delivered?"
         value={data.receivedMoneyToPurchase}
         onChange={(v) => onChange('receivedMoneyToPurchase', v)}
+        fieldKey="receivedMoneyToPurchase"
+        findings={findings}
       />
 
       {data.receivedMoneyToPurchase === 'yes' && (
@@ -79,6 +91,8 @@ export function Section4BusinessEmployment({ data, onChange }: SectionProps) {
           label="Details"
           value={data.receivedMoneyDetails}
           onChange={(v) => onChange('receivedMoneyDetails', v)}
+          fieldKey="receivedMoneyDetails"
+          findings={findings}
         />
       )}
     </div>

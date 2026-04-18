@@ -591,6 +591,8 @@ export interface SectionProps {
   data: QuestionnaireData;
   onChange: (path: string, value: QuestionnaireValue) => void;
   readOnly?: boolean;
+  /** AI review findings scoped to this section. Passed down from FormShell. */
+  findings?: import('@/api/client').ReviewFinding[];
 }
 
 export function createEmptyQuestionnaire(): QuestionnaireData {
