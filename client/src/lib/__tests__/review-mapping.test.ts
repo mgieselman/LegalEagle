@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { findingsForSection, sectionNameToKey, sectionFindingSeverity } from '../review-mapping';
+import { findingsForSection, sectionNameToKey, sectionFindingSeverity, findingToSectionKey } from '../review-mapping';
 import type { ReviewFinding } from '@/api/client';
 
 // ---------------------------------------------------------------------------
@@ -131,6 +131,41 @@ describe('sectionNameToKey', () => {
   it('returns null for completely unrecognised section names', () => {
     expect(sectionNameToKey('Miscellaneous')).toBeNull();
     expect(sectionNameToKey('')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// findingToSectionKey — canonical single-finding routing (used by FormShell
+// auto-expand + finding-click handlers; must agree with findingsForSection).
+// ---------------------------------------------------------------------------
+
+describe('findingToSectionKey', () => {
+  it('fieldHint wins over section-name keywords', () => {
+    expect(
+      findingToSectionKey(finding('paymentsOver600[0].paymentDates', 'Gifts & Transfers')),
+    ).toBe('7');
+  });
+
+  it('falls back to section name when fieldHint is absent', () => {
+    expect(findingToSectionKey(finding(undefined, 'Vehicles'))).toBe('27');
+  });
+
+  it('returns null when neither fieldHint nor section name resolve', () => {
+    expect(findingToSectionKey(finding(undefined, 'Miscellaneous'))).toBeNull();
+  });
+
+  it('agrees with findingsForSection for every production finding', () => {
+    const PRODUCTION: ReviewFinding[] = [
+      { severity: 'error', section: 'Gifts & Transfers', message: 'm', fieldHint: 'paymentsOver600[0].paymentDates' },
+      { severity: 'error', section: 'Vehicles', message: 'm', fieldHint: 'vehicles[0].approximateValue' },
+      { severity: 'warning', section: 'Bank Accounts', message: 'm', fieldHint: 'closedAccountEntries[0].finalBalance' },
+      { severity: 'info', section: 'Medical Debt', message: 'm', fieldHint: 'unsecuredDebts' },
+    ];
+    for (const f of PRODUCTION) {
+      const key = findingToSectionKey(f);
+      expect(key).not.toBeNull();
+      expect(findingsForSection(key!, PRODUCTION)).toContain(f);
+    }
   });
 });
 

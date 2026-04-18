@@ -156,7 +156,7 @@ export function sectionNameToKey(sectionName: string): string | null {
  * Resolves the section key for a finding.
  * Priority: fieldHint prefix > section name keywords > message keywords.
  */
-function findingToSectionKey(f: ReviewFinding): string | null {
+export function findingToSectionKey(f: ReviewFinding): string | null {
   if (f.fieldHint) {
     const fromHint = fieldHintToSectionKey(f.fieldHint);
     if (fromHint) return fromHint;

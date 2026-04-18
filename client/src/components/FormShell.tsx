@@ -4,7 +4,7 @@ import { Select } from './ui/select';
 import { SEVERITY_STYLES, SeverityIcon } from './ui/severity-indicator';
 import { AutoSaveIndicator } from './ui/auto-save-indicator';
 import { ReviewPanel } from './ReviewPanel';
-import { sectionNameToKey, sectionFindingSeverity, findingsForSection } from '@/lib/review-mapping';
+import { findingToSectionKey, sectionFindingSeverity, findingsForSection } from '@/lib/review-mapping';
 import { ALL_SECTIONS } from '@/lib/section-registry';
 import { getSectionStatus } from '@/lib/completion';
 import type { ReviewFinding } from '@/api/client';
@@ -57,7 +57,7 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
         setOpenSections((prev) => {
           const next = new Set(prev);
           q.findings.forEach((f) => {
-            const k = sectionNameToKey(f.section) || sectionNameToKey(f.message);
+            const k = findingToSectionKey(f);
             if (k) next.add(k);
           });
           return next;
@@ -76,7 +76,7 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
   };
 
   const handleFindingClick = (finding: ReviewFinding) => {
-    const key = sectionNameToKey(finding.section) || sectionNameToKey(finding.message);
+    const key = findingToSectionKey(finding);
     if (key) {
       setOpenSections((prev) => {
         const next = new Set(prev);
