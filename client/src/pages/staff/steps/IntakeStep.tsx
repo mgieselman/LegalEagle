@@ -36,7 +36,7 @@ export function IntakeStep() {
           <StatusBadge status={caseData.status} />
           {caseData.filingDate && (
             <span className="text-muted-foreground">
-              Filing: {new Date(caseData.filingDate).toLocaleDateString()}
+              Filing: {new Date(caseData.filingDate).toLocaleDateString('en-US')}
             </span>
           )}
           {caseData.householdSize != null && (

@@ -64,7 +64,7 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
         });
       });
     }
-  }, [q.hasReview]);
+  }, [q.hasReview, q.findings]);
 
   const toggleSection = (key: string) => {
     setOpenSections((prev) => {
@@ -96,7 +96,7 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
 
   const formOptions = q.formList.map((f) => (
     <option key={f.id} value={f.id}>
-      {f.name} ({new Date(f.updated_at).toLocaleDateString()})
+      {f.name} ({new Date(f.updated_at).toLocaleDateString('en-US')})
     </option>
   ));
 

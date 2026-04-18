@@ -50,7 +50,7 @@ export function ClientDetail() {
       {/* Client header */}
       <PageHeader
         title={`${client.firstName} ${client.lastName}`}
-        subtitle={[client.email, client.phone, `Added ${new Date(client.createdAt).toLocaleDateString()}`]
+        subtitle={[client.email, client.phone, `Added ${new Date(client.createdAt).toLocaleDateString('en-US')}`]
           .filter(Boolean)
           .join(' \u00b7 ')}
         actions={
@@ -101,7 +101,7 @@ export function ClientDetail() {
                 header: 'Created',
                 accessor: (c) => (
                   <span className="text-muted-foreground">
-                    {new Date(c.createdAt).toLocaleDateString()}
+                    {new Date(c.createdAt).toLocaleDateString('en-US')}
                   </span>
                 ),
               },

@@ -39,7 +39,7 @@ const mockCaseData = {
   filingDistrict: null,
   householdSize: 2,
   isJointFiling: false,
-  createdAt: '2026-01-01T00:00:00Z',
+  createdAt: '2025-06-15T12:00:00Z',
   questionnaire: {
     id: 'quest-1',
     name: 'Test Questionnaire',
@@ -110,7 +110,7 @@ describe('CaseOverview', () => {
       expect(screen.getByText('Southern District of New York')).toBeInTheDocument();
       
       // Created date (formatted)
-      expect(screen.getByText('12/31/2025')).toBeInTheDocument();
+      expect(screen.getByText('6/15/2025')).toBeInTheDocument();
     });
 
     it('handles null optional fields gracefully', async () => {

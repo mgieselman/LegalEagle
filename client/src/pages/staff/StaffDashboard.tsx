@@ -242,7 +242,7 @@ export function StaffDashboard() {
             headerKey: 'filingDate',
             accessor: (c) => (
               <span className="text-muted-foreground">
-                {c.filedAt ? new Date(c.filedAt).toLocaleDateString() : '—'}
+                {c.filedAt ? new Date(c.filedAt).toLocaleDateString('en-US') : '—'}
               </span>
             ),
           },
@@ -251,7 +251,7 @@ export function StaffDashboard() {
             headerKey: 'created',
             accessor: (c) => (
               <span className="text-muted-foreground">
-                {new Date(c.createdAt).toLocaleDateString()}
+                {new Date(c.createdAt).toLocaleDateString('en-US')}
               </span>
             ),
           },

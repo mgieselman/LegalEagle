@@ -16,7 +16,7 @@ function formatSize(bytes: number): string {
 }
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString();
+  return new Date(iso).toLocaleDateString('en-US');
 }
 
 function formatEta(ms: number): string {

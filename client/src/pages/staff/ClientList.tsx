@@ -69,7 +69,7 @@ export function ClientList() {
             header: 'Created',
             accessor: (c) => (
               <span className="text-muted-foreground">
-                {new Date(c.createdAt).toLocaleDateString()}
+                {new Date(c.createdAt).toLocaleDateString('en-US')}
               </span>
             ),
           },

@@ -68,7 +68,7 @@ export function CaseOverview({ mode }: CaseOverviewProps) {
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground">Created</label>
-              <p className="text-sm">{new Date(caseData.createdAt).toLocaleDateString()}</p>
+              <p className="text-sm">{new Date(caseData.createdAt).toLocaleDateString('en-US')}</p>
             </div>
           </div>
         </Card>

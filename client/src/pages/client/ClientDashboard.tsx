@@ -79,7 +79,7 @@ export function ClientDashboard() {
               </div>
               {c.filingDate && (
                 <p className="text-xs text-muted-foreground mt-2">
-                  Filed: {new Date(c.filingDate).toLocaleDateString()}
+                  Filed: {new Date(c.filingDate).toLocaleDateString('en-US')}
                 </p>
               )}
             </Link>
