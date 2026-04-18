@@ -47,12 +47,21 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
     }
   }, [q.lastMessage, q]);
 
-  // Reset review UI when review starts
+  // Reset review UI when review starts; auto-expand sections with findings
   useEffect(() => {
     if (q.hasReview) {
       // Async state update to avoid cascading renders  
       Promise.resolve().then(() => {
         setReviewCollapsed(false);
+        // Open every section that has at least one finding so inline banners are visible
+        setOpenSections((prev) => {
+          const next = new Set(prev);
+          q.findings.forEach((f) => {
+            const k = sectionNameToKey(f.section) || sectionNameToKey(f.message);
+            if (k) next.add(k);
+          });
+          return next;
+        });
       });
     }
   }, [q.hasReview]);
@@ -215,6 +224,7 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
             const severity = sectionFindingSeverity(key, q.findings);
             const isHighlighted = highlightedSection === key;
             const sectionStatus = getSectionStatus(q.data, key);
+            const sectionFindings = findingsForSection(key, q.findings);
             const severityBorder = severity
               ? `${SEVERITY_STYLES[severity].border} border-2`
               : 'border';
@@ -223,17 +233,27 @@ export function FormShell({ caseId, mode = 'staff', questionnaireData, readOnly 
             return (
               <div key={key} id={`section-${key}`} className={`rounded-lg overflow-hidden ${severityBorder} ${highlightClass}`}>
                 <button
-                  className={`w-full flex items-center gap-2 px-4 py-3 text-left font-medium hover:bg-muted/50 transition-colors cursor-pointer ${completeBg}`}
+                  className={`w-full px-4 py-3 text-left font-medium hover:bg-muted/50 transition-colors cursor-pointer ${completeBg}`}
                   onClick={() => toggleSection(key)}
                 >
-                  {isOpen ? (
-                    <ChevronDown className="h-4 w-4 shrink-0" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 shrink-0" />
-                  )}
-                  {title}
-                  {severity && (
-                    <SeverityIcon severity={severity} className="ml-auto h-2.5 w-2.5 shrink-0" />
+                  <div className="flex items-center gap-2">
+                    {isOpen ? (
+                      <ChevronDown className="h-4 w-4 shrink-0" />
+                    ) : (
+                      <ChevronRight className="h-4 w-4 shrink-0" />
+                    )}
+                    <span>{title}</span>
+                    {severity && (
+                      <SeverityIcon severity={severity} className="ml-auto h-3.5 w-3.5 shrink-0" />
+                    )}
+                  </div>
+                  {severity && !isOpen && sectionFindings.length > 0 && (
+                    <p className={`ml-6 mt-1 text-xs font-normal ${SEVERITY_STYLES[severity].text}`}>
+                      {sectionFindings[0].message.length > 80
+                        ? sectionFindings[0].message.slice(0, 80) + '…'
+                        : sectionFindings[0].message}
+                      {sectionFindings.length > 1 && ` (+${sectionFindings.length - 1} more)`}
+                    </p>
                   )}
                 </button>
                 {isOpen && (
