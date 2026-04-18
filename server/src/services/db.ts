@@ -105,7 +105,7 @@ export function updateForm(
   metadata?: string
 ): { success: boolean; version: number } {
   const now = new Date().toISOString();
-  const updateData: any = { name, data, updatedAt: now };
+  const updateData: Record<string, unknown> = { name, data, updatedAt: now };
   if (metadata !== undefined) {
     updateData.metadata = metadata;
   }

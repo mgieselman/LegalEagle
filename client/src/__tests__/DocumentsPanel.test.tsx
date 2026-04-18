@@ -147,7 +147,7 @@ describe('DocumentsPanel', () => {
     await userEvent.upload(input, file);
 
     await waitFor(() => {
-      expect(screen.getByText('Upload failed')).toBeInTheDocument();
+      expect(screen.getByText(/Upload failed/)).toBeInTheDocument();
     });
   });
 });

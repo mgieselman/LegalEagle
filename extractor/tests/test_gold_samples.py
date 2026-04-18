@@ -25,7 +25,8 @@ from fastapi.testclient import TestClient
 from main import app
 from rule_extractors.utils import normalize_date
 
-client = TestClient(app)
+# Shared-secret middleware requires the header; conftest.py sets the env var.
+client = TestClient(app, headers={"X-Extractor-Secret": "test-shared-secret"})
 
 
 

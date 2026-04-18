@@ -3,10 +3,25 @@
  * Calls POST /extract with the raw file bytes and returns a structured result.
  *
  * Configure via PYTHON_EXTRACTOR_URL (default: http://localhost:8000).
+ * Authenticates with the extractor via the `X-Extractor-Secret` header
+ * (EXTRACTOR_SHARED_SECRET env var).
  */
 
 export const PYTHON_EXTRACTOR_URL =
   process.env.PYTHON_EXTRACTOR_URL ?? 'http://localhost:8000';
+
+const EXTRACTOR_SHARED_SECRET = process.env.EXTRACTOR_SHARED_SECRET;
+
+// Fail loudly at module load if PYTHON_EXTRACTOR_URL is configured but the
+// shared secret is not. This prevents silent 401s in prod — the Node server
+// should crash on boot rather than accept uploads that will all fail auth.
+if (process.env.PYTHON_EXTRACTOR_URL && !EXTRACTOR_SHARED_SECRET) {
+  throw new Error(
+    'PYTHON_EXTRACTOR_URL is set but EXTRACTOR_SHARED_SECRET is not. ' +
+      'Refusing to start — remote extractor auth would fail on every request. ' +
+      'Set EXTRACTOR_SHARED_SECRET in the environment or unset PYTHON_EXTRACTOR_URL.',
+  );
+}
 
 export interface PythonExtractionResult {
   doc_class: string;
@@ -17,6 +32,19 @@ export interface PythonExtractionResult {
   data: Record<string, unknown>;
   field_confidences: Record<string, number>;
   warnings: string[];
+}
+
+function authHeaders(): Record<string, string> {
+  // Read the env var fresh each call so tests can stub it after import.
+  // In prod the value is set once at process start and never changes.
+  const secret = process.env.EXTRACTOR_SHARED_SECRET ?? EXTRACTOR_SHARED_SECRET;
+  if (!secret) {
+    throw new Error(
+      'EXTRACTOR_SHARED_SECRET is not set. The Python extractor requires ' +
+        'shared-secret auth on every request.',
+    );
+  }
+  return { 'X-Extractor-Secret': secret };
 }
 
 /**
@@ -42,11 +70,13 @@ export async function callPythonExtractor(
   const response = await fetch(`${PYTHON_EXTRACTOR_URL}/extract`, {
     method: 'POST',
     body: formData,
+    headers: authHeaders(),
   });
 
   if (!response.ok) {
     const errorText = await response.text().catch(() => 'unknown error');
-    throw new Error(`Python extractor returned ${response.status}: ${errorText}`);
+    const suffix = response.status === 401 ? ' (unauthorized)' : '';
+    throw new Error(`Python extractor returned ${response.status}${suffix}: ${errorText}`);
   }
 
   return response.json() as Promise<PythonExtractionResult>;
@@ -55,11 +85,16 @@ export async function callPythonExtractor(
 /**
  * Check if the Python extractor service is reachable.
  * Returns true if the /health endpoint responds successfully.
+ *
+ * The extractor skips shared-secret auth on /health (for Azure probes), but we
+ * still send the header for consistency and so misconfiguration fails the same
+ * way on both endpoints.
  */
 export async function isPythonExtractorAvailable(): Promise<boolean> {
   try {
     const response = await fetch(`${PYTHON_EXTRACTOR_URL}/health`, {
       signal: AbortSignal.timeout(2000),
+      headers: authHeaders(),
     });
     return response.ok;
   } catch {

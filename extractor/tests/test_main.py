@@ -16,7 +16,9 @@ from fastapi.testclient import TestClient
 import ai_extractor
 from main import app
 
-client = TestClient(app)
+# All /extract calls require the shared-secret header; conftest.py sets the
+# matching env var. /health bypasses the middleware.
+client = TestClient(app, headers={"X-Extractor-Secret": "test-shared-secret"})
 
 HAS_API_KEY = bool(os.environ.get("ANTHROPIC_API_KEY"))
 

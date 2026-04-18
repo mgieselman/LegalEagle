@@ -9,7 +9,7 @@ import { z } from 'zod/v4';
 const qualityCheckInputSchema = z.object({
   content: z.instanceof(Buffer),
   filename: z.string().min(1).max(255).refine(name => !name.includes('../') && !name.includes('..\\'), 'Invalid filename'),
-  mimeType: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9\/\-\.]*$/, 'Invalid MIME type'),
+  mimeType: z.string().regex(/^[a-zA-Z0-9][a-zA-Z0-9/\-.]*$/, 'Invalid MIME type'),
   fileHash: z.string().regex(/^[a-f0-9]{64}$/, 'Invalid SHA-256 hash'),
 });
 

@@ -52,8 +52,7 @@ const mockedUseParams = vi.mocked(useParams);
 const mockCaseData = {
   id: 'case-1',
   clientId: 'client-1',
-  clientFirstName: 'John',
-  clientLastName: 'Doe',
+  client: { id: 'client-1', firstName: 'John', lastName: 'Doe' },
   chapter: '7',
   status: 'intake' as const,
   filingDate: null,
@@ -65,6 +64,7 @@ const mockCaseData = {
     id: 'quest-1',
     name: 'Test Questionnaire',
     data: { fullName: 'John Doe' },
+    version: 1,
   },
 };
 
