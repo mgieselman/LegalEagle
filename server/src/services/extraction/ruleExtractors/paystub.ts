@@ -166,7 +166,7 @@ export function extractPaystubByRules(text: string): RuleExtractionResult<Paystu
 
   // --- Gross Pay ---
   // Two-number pattern captures (current, ytd) in one match; single patterns are fallbacks.
-  let grossTwoMatch: RegExpExecArray | null = RE_GROSS_TWO.exec(text);
+  const grossTwoMatch: RegExpExecArray | null = RE_GROSS_TWO.exec(text);
   if (grossTwoMatch) {
     const val = parseDollar(grossTwoMatch[1]);
     if (val !== null) { data.gross_pay = val; fieldConfidences.gross_pay = 0.9; }
@@ -179,7 +179,7 @@ export function extractPaystubByRules(text: string): RuleExtractionResult<Paystu
   }
 
   // --- Net Pay ---
-  let netTwoMatch: RegExpExecArray | null = RE_NET_TWO.exec(text);
+  const netTwoMatch: RegExpExecArray | null = RE_NET_TWO.exec(text);
   if (netTwoMatch) {
     const val = parseDollar(netTwoMatch[1]);
     if (val !== null) { data.net_pay = val; fieldConfidences.net_pay = 0.9; }

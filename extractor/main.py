@@ -14,12 +14,16 @@ Pipeline
 from __future__ import annotations
 
 import asyncio
+import hmac
 import logging
+import os
+import re
 import time
 import uuid
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 
 from classifier import ClassificationResult, classify_by_rules
 from config import MAX_UPLOAD_BYTES, RULE_CONFIDENCE_THRESHOLD
@@ -36,6 +40,44 @@ from schemas import ExtractionResult
 from text_extraction import IMAGE_MIME_TYPES, extract_image_text, extract_pdf_content, extract_text
 
 logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# PII redactor — strip SSNs and account-number-shaped strings from all log
+# records before they're emitted. Installed on the root logger so it covers
+# uvicorn, FastAPI, and our own module loggers.
+# ---------------------------------------------------------------------------
+
+SSN_RE = re.compile(r"\b\d{3}-\d{2}-\d{4}\b|\bssn[\"':=\s]+\d{9}\b", re.I)
+ACCT_RE = re.compile(r"\b\d{10,16}\b")
+
+
+def _redact(value: str) -> str:
+    return ACCT_RE.sub("[REDACTED]", SSN_RE.sub("[REDACTED]", value))
+
+
+class PiiRedactor(logging.Filter):
+    """Regex-redact SSN + account-number shapes from log records."""
+
+    def filter(self, record: logging.LogRecord) -> bool:  # noqa: A003
+        if isinstance(record.msg, str):
+            record.msg = _redact(record.msg)
+        if record.args:
+            if isinstance(record.args, tuple):
+                record.args = tuple(
+                    _redact(a) if isinstance(a, str) else a for a in record.args
+                )
+            elif isinstance(record.args, dict):
+                record.args = {
+                    k: (_redact(v) if isinstance(v, str) else v)
+                    for k, v in record.args.items()
+                }
+        return True
+
+
+logging.getLogger().addFilter(PiiRedactor())
+
+
 app = FastAPI(title="LegalEagle Extractor", version="0.1.0")
 
 
@@ -65,6 +107,42 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
 
 
 app.add_middleware(CorrelationIdMiddleware)
+
+
+# ---------------------------------------------------------------------------
+# Shared-secret auth middleware
+# ---------------------------------------------------------------------------
+
+class SharedSecretMiddleware(BaseHTTPMiddleware):
+    """Require `X-Extractor-Secret` header on all routes except /health.
+
+    The env var `EXTRACTOR_SHARED_SECRET` is read on each request so tests
+    can set/unset it without reloading the module. Comparison uses
+    `hmac.compare_digest` for constant-time equality.
+    """
+
+    async def dispatch(self, request: Request, call_next):  # noqa: ANN001
+        # Let liveness/readiness probes through without a secret.
+        if request.url.path == "/health":
+            return await call_next(request)
+
+        expected = os.environ.get("EXTRACTOR_SHARED_SECRET")
+        if not expected:
+            return JSONResponse(
+                {"error": "server misconfigured"},
+                status_code=500,
+            )
+
+        provided = request.headers.get("X-Extractor-Secret", "")
+        if not hmac.compare_digest(provided, expected):
+            return JSONResponse(
+                {"error": "unauthorized"},
+                status_code=401,
+            )
+        return await call_next(request)
+
+
+app.add_middleware(SharedSecretMiddleware)
 
 
 # ---------------------------------------------------------------------------

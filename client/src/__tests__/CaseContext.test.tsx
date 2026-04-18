@@ -47,8 +47,11 @@ function TestUseCaseData({ caseId, clientMode }: { caseId: string; clientMode?: 
 const mockCaseData = {
   id: 'case-1',
   clientId: 'client-1',
-  clientFirstName: 'John',
-  clientLastName: 'Doe',
+  client: {
+    id: 'client-1',
+    firstName: 'John',
+    lastName: 'Doe',
+  },
   chapter: '7',
   status: 'intake' as const,
   filingDate: null,
@@ -60,6 +63,7 @@ const mockCaseData = {
     id: 'quest-1',
     name: 'Test Questionnaire',
     data: { fullName: 'John Doe' },
+    version: 1,
   },
 };
 
@@ -237,7 +241,7 @@ describe('CaseContext', () => {
       mockedApi.getCase.mockResolvedValue({
         ...mockCaseData,
         id: 'case-2',
-        clientFirstName: 'Jane',
+        client: { id: 'client-1', firstName: 'Jane', lastName: 'Doe' },
       });
 
       rerender(
@@ -358,7 +362,7 @@ describe('CaseContext', () => {
       mockedApi.getCase.mockResolvedValue({
         ...mockCaseData,
         id: 'case-2',
-        clientFirstName: 'Jane',
+        client: { id: 'client-1', firstName: 'Jane', lastName: 'Doe' },
       });
 
       rerender(<TestUseCaseData caseId="case-2" />);

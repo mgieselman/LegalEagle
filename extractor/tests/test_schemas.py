@@ -339,7 +339,7 @@ def test_doc_classes_list():
     assert "social_security_card" in DOC_CLASSES
     assert "brokerage_statement" in DOC_CLASSES
     assert "vehicle_title" in DOC_CLASSES
-    assert len(DOC_CLASSES) == 23
+    assert len(DOC_CLASSES) == 24
 
 
 def test_doc_class_schema_map():

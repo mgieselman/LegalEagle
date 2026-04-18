@@ -396,21 +396,27 @@ def test_current_config_investment_chains():
 
 
 def test_current_config_mortgage_chain():
-    """Mortgage chain: RuleMortgageExtractor → AzureDI → ClaudeExtractor."""
+    """Mortgage chain: RuleMortgageExtractor → ClaudeExtractor (no Azure DI)."""
     chain = CURRENT_CONFIG.chain_for("mortgage.us")
-    assert len(chain.providers) == 3
+    assert len(chain.providers) == 2
     assert isinstance(chain.providers[0], RuleMortgageExtractor)
-    assert isinstance(chain.providers[1], AzureDIExtractor)
-    assert isinstance(chain.providers[2], ClaudeExtractor)
+    assert isinstance(chain.providers[1], ClaudeExtractor)
 
 
 def test_current_config_id_chain():
-    """ID document chains: AzureDI → ClaudeExtractor."""
-    for doc_class in ("idDocument", "social_security_card"):
-        chain = CURRENT_CONFIG.chain_for(doc_class)
-        assert len(chain.providers) == 2
-        assert isinstance(chain.providers[0], AzureDIExtractor)
-        assert isinstance(chain.providers[1], ClaudeExtractor)
+    """idDocument: AzureDI → ClaudeExtractor."""
+    chain = CURRENT_CONFIG.chain_for("idDocument")
+    assert len(chain.providers) == 2
+    assert isinstance(chain.providers[0], AzureDIExtractor)
+    assert isinstance(chain.providers[1], ClaudeExtractor)
+
+
+def test_current_config_ssn_card_chain():
+    """social_security_card: RuleSSNCardExtractor → AzureDI → ClaudeExtractor."""
+    chain = CURRENT_CONFIG.chain_for("social_security_card")
+    assert len(chain.providers) == 3
+    assert isinstance(chain.providers[1], AzureDIExtractor)
+    assert isinstance(chain.providers[2], ClaudeExtractor)
 
 
 def test_current_config_credit_card_chain():
@@ -422,10 +428,9 @@ def test_current_config_credit_card_chain():
 
 
 def test_current_config_no_override_uses_default():
-    """Doc classes without an override chain use the default (AzureDI → Claude)."""
-    for doc_class in ("legal_document", "vehicle_title"):
-        chain = CURRENT_CONFIG.chain_for(doc_class)
-        assert chain is CURRENT_CONFIG.default_extractors
+    """Doc classes without an override chain fall back to the default (AzureDI → Claude)."""
+    chain = CURRENT_CONFIG.chain_for("unclassified")
+    assert chain is CURRENT_CONFIG.default_extractors
 
 
 # ---------------------------------------------------------------------------

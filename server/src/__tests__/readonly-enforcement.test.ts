@@ -4,8 +4,6 @@ import express from 'express';
 import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
-import { setupTestDatabase } from '../setup';
-
 // Mock the forms route with read-only enforcement
 const app = express();
 app.use(express.json());
@@ -53,7 +51,7 @@ app.put('/api/forms/:id/:formName', (req, res) => {
       version: 2 
     });
 
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Database error' });
   } finally {
     db.close();

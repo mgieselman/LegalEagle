@@ -117,7 +117,7 @@ router.get('/', requireStaff, (req: Request, res: Response) => {
 
   // Optionally add progress and attention data
   const results = rows.map(row => {
-    const result: any = { ...row };
+    const result: Record<string, unknown> = { ...row };
     
     if (includeProgress) {
       result.progress = computeCaseProgress(row.id, firmId);
