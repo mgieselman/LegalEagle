@@ -3,6 +3,7 @@ import { Button } from './ui/button';
 import { api, type DocumentSummary, type AutofillPatch, type QualityIssue } from '@/api/client';
 import { Upload, Download, Trash2, FileText, AlertCircle, Wand2, Play, Loader2 } from 'lucide-react';
 import { ProcessingStatusBadge } from './ProcessingStatusBadge';
+import { docClassLabel } from '@/lib/docClass';
 import { DocumentReviewPanel } from './DocumentReviewPanel';
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.csv', '.xlsx', '.txt', '.jpg', '.jpeg', '.png', '.heic', '.webp'];
@@ -409,6 +410,7 @@ export function DocumentsPanel({ caseId, onAutofill, onAutofillAction }: Documen
               <thead>
                 <tr className="border-b">
                   <th className="text-left font-medium p-2 text-muted-foreground">File</th>
+                  <th className="text-left font-medium p-2 text-muted-foreground">Type</th>
                   <th className="text-left font-medium p-2 text-muted-foreground">Status</th>
                   <th className="text-left font-medium p-2 text-muted-foreground">Quality</th>
                   <th className="text-left font-medium p-2 text-muted-foreground">Size</th>
@@ -429,6 +431,7 @@ export function DocumentsPanel({ caseId, onAutofill, onAutofillAction }: Documen
                         <span className="truncate max-w-xs">{doc.originalFilename}</span>
                       </div>
                     </td>
+                    <td className="p-2 text-muted-foreground">{docClassLabel(doc.docClass)}</td>
                     <td className="p-2">
                       <ProcessingStatusBadge status={doc.processingStatus} />
                     </td>
@@ -558,8 +561,10 @@ export function DocumentsPanel({ caseId, onAutofill, onAutofillAction }: Documen
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
                   <ProcessingStatusBadge status={doc.processingStatus} />
+                  <span>{docClassLabel(doc.docClass)}</span>
+                  <span>&middot;</span>
                   <span>{formatSize(doc.fileSizeBytes)}</span>
                   <span>&middot;</span>
                   <span>{formatDate(doc.createdAt)}</span>

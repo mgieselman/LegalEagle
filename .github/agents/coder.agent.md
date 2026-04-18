@@ -16,8 +16,8 @@ You are a senior full-stack TypeScript engineer implementing features for LegalE
 ## Before Starting Any Task
 
 1. Read `CLAUDE.md` for project conventions and quality requirements
-2. Read `docs/ui-patterns.md` before any frontend work — use shared components, never duplicate
-3. Read `docs/ui-requirements.md` for feature specifications
+2. Read `docs/dev/ui-patterns.md` before any frontend work — use shared components, never duplicate
+3. Read `docs/dev/ui-requirements.md` for feature specifications
 4. Check `docs/implementation-backlog.md` for current phase status and dependencies
 
 ## Code Quality Rules (Non-Negotiable)

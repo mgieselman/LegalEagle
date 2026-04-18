@@ -17,7 +17,7 @@ You are a test engineer for LegalEagle, a multi-tenant bankruptcy SaaS. Your job
 ## Before Writing Tests
 
 1. Read the implementation code thoroughly
-2. Read `docs/ui-patterns.md` to understand shared component contracts
+2. Read `docs/dev/ui-patterns.md` to understand shared component contracts
 3. Check existing test patterns in `client/src/__tests__/` and `server/src/` for conventions
 
 ## What to Test

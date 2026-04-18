@@ -33,7 +33,7 @@ Multi-tenant bankruptcy SaaS for law firms — questionnaire intake, document pr
 - **admin** — staff role. Full access + user mgmt, settings, reference data.
 
 ## UI Consistency
-Before building or modifying any frontend component, read `/docs/ui-patterns.md`. Key rules:
+Before building or modifying any frontend component, read `/docs/dev/ui-patterns.md`. Key rules:
 - **Use shared components** from `client/src/components/ui/` — `PageHeader`, `StatusBadge`, `EmptyState`, `DataTable`, `Card`, `SeverityIcon`/`SeverityCard`/`ConfidenceScore`, `Button`, `Input`, `Label`, `Select`. Do not duplicate their logic inline.
 - **Never hardcode status, severity, or confidence colors.** Always use the corresponding shared component.
 - **Page structure**: every page wraps in `<div className="p-6 space-y-6">` with a `<PageHeader>` at top.
@@ -51,12 +51,12 @@ Before building or modifying any frontend component, read `/docs/ui-patterns.md`
 
 ## Reference Docs
 Architecture, design decisions, and BK domain knowledge are in `/docs/`. Read before making structural changes.
-- `/docs/architecture.md` — system design, tech stack, roles, page structure
-- `/docs/design-decisions.md` — product direction, workflow, auth strategy, interfaces
-- `/docs/document-pipeline.md` — document processing pipeline (upload, classify, extract, validate, review, form generation)
-- `/docs/extraction.md` — extraction pipeline architecture, classification tiers, rule extractors, Azure DI, cost analysis
-- `/docs/extraction-requirements.md` — per-doc-class extraction schemas and behavioral rules
-- `/docs/ui-requirements.md` — view specs, user flows, role capabilities, progress bar stages
-- `/docs/ui-patterns.md` — **read before any frontend work** — Tailwind conventions, shared components, spacing, colors, anti-patterns
-- `/docs/competitive-matrix.md` — feature comparison vs. Jubilee Pro and Glade.ai
-- `/docs/bk-knowledge/means-test.md` — Chapter 7 means test reference (Forms 122A, Schedule I)
+- `/docs/dev/architecture.md` — system design, tech stack, roles, page structure
+- `/docs/dev/design-decisions.md` — product direction, workflow, auth strategy, interfaces
+- `/docs/dev/document-pipeline.md` — document processing pipeline (upload, classify, extract, validate, review, form generation)
+- `/docs/dev/extraction.md` — extraction pipeline architecture, classification tiers, rule extractors, Azure DI, cost analysis
+- `/docs/dev/extraction-requirements.md` — per-doc-class extraction schemas and behavioral rules
+- `/docs/dev/ui-requirements.md` — view specs, user flows, role capabilities, progress bar stages
+- `/docs/dev/ui-patterns.md` — **read before any frontend work** — Tailwind conventions, shared components, spacing, colors, anti-patterns
+- `/docs/dev/competitive-matrix.md` — feature comparison vs. Jubilee Pro and Glade.ai
+- `/docs/domain/means-test.md` — Chapter 7 means test reference (Forms 122A, Schedule I)

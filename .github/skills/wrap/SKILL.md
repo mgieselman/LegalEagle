@@ -67,7 +67,7 @@ If no mode is provided, default to `full`.
 
 6. Enforce documentation consistency.
 - If behavior, routes, env vars, UI patterns, or workflows changed, update docs in `docs/` (and relevant READMEs) in the same pass.
-- For UI behavior changes, ensure alignment with [../../../docs/ui-patterns.md](../../../docs/ui-patterns.md) and [../../../docs/ui-requirements.md](../../../docs/ui-requirements.md).
+- For UI behavior changes, ensure alignment with [../../../docs/dev/ui-patterns.md](../../../docs/dev/ui-patterns.md) and [../../../docs/dev/ui-requirements.md](../../../docs/dev/ui-requirements.md).
 - If no docs update is needed, explicitly state why.
 
 7. Produce a commit-readiness verdict.

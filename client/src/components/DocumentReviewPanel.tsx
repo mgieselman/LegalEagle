@@ -4,6 +4,7 @@ import { SeverityIcon, ConfidenceScore } from './ui/severity-indicator';
 import { api, type ExtractionResultSummary, type ValidationResultSummary } from '@/api/client';
 import { ProcessingStatusBadge } from './ProcessingStatusBadge';
 import { CheckCircle, Edit3, X, AlertTriangle } from 'lucide-react';
+import { docClassLabel } from '@/lib/docClass';
 
 interface DocumentReviewPanelProps {
   documentId: string;
@@ -12,21 +13,6 @@ interface DocumentReviewPanelProps {
   onClose: () => void;
   onUpdated: () => void;
 }
-
-const DOC_CLASS_LABELS: Record<string, string> = {
-  paystub: 'Paystub',
-  bank_statement_checking: 'Bank Statement (Checking)',
-  bank_statement_savings: 'Bank Statement (Savings)',
-  tax_return: 'Tax Return',
-  w2: 'W-2',
-  '1099': '1099',
-  credit_card_statement: 'Credit Card Statement',
-  ira_statement: 'IRA Statement',
-  '401k_statement': '401(k) Statement',
-  payroll_export: 'Payroll Export',
-  other: 'Other',
-  unclassified: 'Unclassified',
-};
 
 export function DocumentReviewPanel({ documentId, docClass, processingStatus, onClose, onUpdated }: DocumentReviewPanelProps) {
   const [extraction, setExtraction] = useState<ExtractionResultSummary | null>(null);
@@ -93,7 +79,7 @@ export function DocumentReviewPanel({ documentId, docClass, processingStatus, on
       {/* Classification + Status */}
       <div className="flex flex-wrap gap-2 items-center text-sm">
         <span className="px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium">
-          {DOC_CLASS_LABELS[docClass ?? ''] ?? docClass ?? 'Unknown'}
+          {docClassLabel(docClass)}
         </span>
         <ProcessingStatusBadge status={processingStatus} />
         {extraction?.confidenceScore != null && (

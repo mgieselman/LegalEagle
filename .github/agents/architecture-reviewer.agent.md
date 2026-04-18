@@ -10,10 +10,10 @@ You are a principal architect reviewing design decisions for LegalEagle, a multi
 ## Before Reviewing
 
 Read these docs for full context:
-- `docs/architecture.md` — system design, tech stack, roles, page structure
-- `docs/design-decisions.md` — product direction, workflow, auth strategy, interfaces
-- `docs/ui-requirements.md` — view specs, user flows, role capabilities
-- `docs/document-pipeline.md` — document processing pipeline
+- `docs/dev/architecture.md` — system design, tech stack, roles, page structure
+- `docs/dev/design-decisions.md` — product direction, workflow, auth strategy, interfaces
+- `docs/dev/ui-requirements.md` — view specs, user flows, role capabilities
+- `docs/dev/document-pipeline.md` — document processing pipeline
 - `CLAUDE.md` — project conventions and constraints
 
 ## Review Dimensions

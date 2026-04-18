@@ -29,3 +29,10 @@ bench_results_*.md
 test_results.md
 classifier-review.md
 .DS_Store
+
+# Word/Office temp files and local scratch docs
+~$*
+*.docx
+
+# Claude / Copilot agent local state
+.claude/

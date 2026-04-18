@@ -555,7 +555,7 @@ Cross-document and internal consistency checks run after extraction:
 
 #### Stage 8: Form Mapping
 
-Once all documents are extracted and validated, aggregate the data into bankruptcy form fields. This is covered in detail in `/docs/bk-knowledge/means-test.md`.
+Once all documents are extracted and validated, aggregate the data into bankruptcy form fields. This is covered in detail in `/docs/domain/means-test.md`.
 
 **Key calculations:**
 - **CMI (Current Monthly Income):** Average gross income over the 6 calendar months before filing
