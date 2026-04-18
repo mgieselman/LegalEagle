@@ -124,7 +124,7 @@ const SECTION_KEYWORD_MAP: Record<string, string> = {
   'gift': '12', 'transfer': '12',
   'loss': '13', 'fire': '13', 'theft': '13', 'gambling': '13',
   'attorney': '14', 'consultant': '14', 'counseling': '14',
-  'closed account': '15', 'closed bank': '15',
+  'closed account': '15', 'closed bank': '15', 'bank account': '15',
   'safe deposit': '16',
   'property held for': '17', 'property for other': '17',
   'lease': '18', 'cooperative': '18',
