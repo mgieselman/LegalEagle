@@ -1,16 +1,23 @@
+import { useState } from 'react';
 import { useCaseContext } from '@/context/CaseContext';
 import { useQuestionnaireContext } from '@/context/QuestionnaireContext';
+import { useSectionNav } from '@/context/SectionNavContext';
 import { SectionAccordion } from '@/components/case-shell/SectionAccordion';
+import { ReviewPanel } from '@/components/ReviewPanel';
 import { ALL_SECTIONS } from '@/lib/section-registry';
+import { findingToSectionKey } from '@/lib/review-mapping';
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/ui/page-header';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ProgressBar } from '@/components/ProgressBar';
 import { Loader2 } from 'lucide-react';
+import type { ReviewFinding } from '@/api/client';
 
 export function IntakeStep() {
   const { caseData, isLoading } = useCaseContext();
-  const { data, handleChange, readOnly, findings } = useQuestionnaireContext();
+  const { data, handleChange, readOnly, findings, hasReview, reviewing } = useQuestionnaireContext();
+  const { navigateToSection } = useSectionNav();
+  const [reviewCollapsed, setReviewCollapsed] = useState(false);
 
   if (isLoading || !caseData) {
     return (
@@ -20,41 +27,60 @@ export function IntakeStep() {
     );
   }
 
+  const handleFindingClick = (finding: ReviewFinding) => {
+    const key = findingToSectionKey(finding);
+    if (key) navigateToSection(key);
+  };
+
+  const panelOffset = hasReview && !reviewCollapsed ? 'md:mr-[420px]' : '';
+
   return (
-    <div className="p-6 space-y-6">
-      <PageHeader
-        title="Intake Questionnaire"
-        subtitle="Review and complete all questionnaire sections"
-      />
+    <>
+      <div className={`p-6 space-y-6 ${panelOffset}`}>
+        <PageHeader
+          title="Intake Questionnaire"
+          subtitle="Review and complete all questionnaire sections"
+        />
 
-      <Card className="p-4 space-y-3">
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
-          <span className="font-medium">
-            {caseData.clientFirstName} {caseData.clientLastName}
-          </span>
-          <span className="text-muted-foreground">Chapter {caseData.chapter}</span>
-          <StatusBadge status={caseData.status} />
-          {caseData.filingDate && (
-            <span className="text-muted-foreground">
-              Filing: {new Date(caseData.filingDate).toLocaleDateString('en-US')}
+        <Card className="p-4 space-y-3">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+            <span className="font-medium">
+              {caseData.clientFirstName} {caseData.clientLastName}
             </span>
-          )}
-          {caseData.householdSize != null && (
-            <span className="text-muted-foreground">
-              Household: {caseData.householdSize}
-            </span>
-          )}
-        </div>
-        <ProgressBar data={data} />
-      </Card>
+            <span className="text-muted-foreground">Chapter {caseData.chapter}</span>
+            <StatusBadge status={caseData.status} />
+            {caseData.filingDate && (
+              <span className="text-muted-foreground">
+                Filing: {new Date(caseData.filingDate).toLocaleDateString('en-US')}
+              </span>
+            )}
+            {caseData.householdSize != null && (
+              <span className="text-muted-foreground">
+                Household: {caseData.householdSize}
+              </span>
+            )}
+          </div>
+          <ProgressBar data={data} />
+        </Card>
 
-      <SectionAccordion
-        sections={ALL_SECTIONS}
-        data={data}
-        onChange={handleChange}
-        readOnly={readOnly}
-        findings={findings}
-      />
-    </div>
+        <SectionAccordion
+          sections={ALL_SECTIONS}
+          data={data}
+          onChange={handleChange}
+          readOnly={readOnly}
+          findings={findings}
+        />
+      </div>
+
+      {hasReview && (
+        <ReviewPanel
+          findings={findings}
+          loading={reviewing}
+          collapsed={reviewCollapsed}
+          onToggle={() => setReviewCollapsed((c) => !c)}
+          onFindingClick={handleFindingClick}
+        />
+      )}
+    </>
   );
 }
