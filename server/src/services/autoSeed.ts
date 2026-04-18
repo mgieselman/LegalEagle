@@ -8,6 +8,25 @@ import {
   seedQuestionnaires,
 } from '../db/seed';
 
+// CLAUDE.md: "Wipe and reseed on deploy until real data exists." When WIPE_DB=true
+// is set, drop every managed table so ensureTablesExist rebuilds the current schema
+// and autoSeed repopulates the fixtures. This is what makes the env var on prod do
+// anything — without this, old CREATE TABLE definitions silently mask schema drift.
+function wipeTablesIfRequested(): void {
+  if (process.env.WIPE_DB !== 'true') return;
+  console.log('[autoSeed] WIPE_DB=true — dropping managed tables before reseed');
+  sqlite.exec(`
+    DROP TABLE IF EXISTS validation_results;
+    DROP TABLE IF EXISTS extraction_results;
+    DROP TABLE IF EXISTS documents;
+    DROP TABLE IF EXISTS questionnaires;
+    DROP TABLE IF EXISTS cases;
+    DROP TABLE IF EXISTS clients;
+    DROP TABLE IF EXISTS users;
+    DROP TABLE IF EXISTS law_firms;
+  `);
+}
+
 function ensureTablesExist(): void {
 
   sqlite.exec(`
@@ -123,6 +142,7 @@ function ensureTablesExist(): void {
 }
 
 export function autoSeed(): void {
+  wipeTablesIfRequested();
   ensureTablesExist();
 
   // Insert seed data only if not already present (idempotent — preserves real data)
