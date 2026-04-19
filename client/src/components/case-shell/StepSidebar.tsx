@@ -12,6 +12,8 @@ interface StepSidebarProps {
   activeStepKey: string;
   data: QuestionnaireData | null;
   onNavigate?: () => void; // called on item click (for mobile drawer close)
+  /** Icon-only rail mode — hides labels and sub-sections. */
+  collapsed?: boolean;
 }
 
 function CompletionIndicator({ status, size = 'md' }: { status: SectionStatus; size?: 'sm' | 'md' }) {
@@ -85,7 +87,7 @@ function SectionList({
   );
 }
 
-export function StepSidebar({ steps, activeStepKey, data, onNavigate }: StepSidebarProps) {
+export function StepSidebar({ steps, activeStepKey, data, onNavigate, collapsed = false }: StepSidebarProps) {
   const [expandedSteps, setExpandedSteps] = useState<Set<string>>(new Set([activeStepKey]));
 
   const toggleExpanded = (key: string) => {
@@ -96,6 +98,33 @@ export function StepSidebar({ steps, activeStepKey, data, onNavigate }: StepSide
       return next;
     });
   };
+
+  if (collapsed) {
+    return (
+      <nav className="py-2 flex flex-col items-center gap-1" aria-label="Case steps (collapsed)">
+        {steps.map((step) => {
+          const isActive = step.key === activeStepKey;
+          const Icon = step.icon;
+          return (
+            <NavLink
+              key={step.key}
+              to={step.key}
+              onClick={() => onNavigate?.()}
+              title={step.label}
+              aria-label={step.label}
+              className={cn(
+                'flex items-center justify-center h-9 w-9 rounded-md transition-colors hover:bg-muted/50',
+                isActive && 'bg-muted/50 text-primary ring-1 ring-primary/40',
+                !isActive && 'text-muted-foreground',
+              )}
+            >
+              <Icon className="h-4 w-4" />
+            </NavLink>
+          );
+        })}
+      </nav>
+    );
+  }
 
   return (
     <nav className="py-4 space-y-1">

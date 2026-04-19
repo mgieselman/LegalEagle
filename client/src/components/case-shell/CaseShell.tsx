@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router';
-import { ChevronLeft, Menu } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { useCaseContext } from '@/context/CaseContext';
 import { SectionNavProvider } from '@/context/SectionNavContext';
 import { SegmentedProgressBar } from './SegmentedProgressBar';
@@ -18,10 +19,20 @@ interface CaseShellProps {
   mode: 'staff' | 'client';
 }
 
+const SIDEBAR_COLLAPSED_KEY = 'caseShellSidebarCollapsed';
+
 export function CaseShell({ steps, backTo, backLabel, mode }: CaseShellProps) {
   const { questionnaire, isLoading, error } = useCaseContext();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true';
+  });
   const location = useLocation();
+
+  useEffect(() => {
+    window.localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(collapsed));
+  }, [collapsed]);
 
   // Derive active step from current URL
   const pathSegments = location.pathname.split('/');
@@ -92,12 +103,37 @@ export function CaseShell({ steps, backTo, backLabel, mode }: CaseShellProps) {
         {/* Main layout: sidebar + content */}
         <div className="flex flex-1 min-h-0">
           {/* Desktop sidebar */}
-          <div className="hidden md:block w-64 border-r bg-muted/10 overflow-y-auto shrink-0">
-            <StepSidebar
-              steps={steps}
-              activeStepKey={activeStepKey}
-              data={questionnaireData}
-            />
+          <div
+            className={cn(
+              'hidden md:flex flex-col border-r bg-muted/10 shrink-0 transition-[width] duration-150',
+              collapsed ? 'w-12' : 'w-64',
+            )}
+          >
+            <div className="flex justify-end px-1 pt-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setCollapsed((c) => !c)}
+                aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+                aria-expanded={!collapsed}
+                data-testid="sidebar-collapse-toggle"
+              >
+                {collapsed ? (
+                  <ChevronRight className="h-4 w-4" />
+                ) : (
+                  <ChevronLeft className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <StepSidebar
+                steps={steps}
+                activeStepKey={activeStepKey}
+                data={questionnaireData}
+                collapsed={collapsed}
+              />
+            </div>
           </div>
 
           {/* Content area */}
