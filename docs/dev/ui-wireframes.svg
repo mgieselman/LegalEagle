@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 490" width="620" height="490"
+     font-family="ui-sans-serif, system-ui, -apple-system, sans-serif">
+
+  <rect width="620" height="490" fill="#ffffff"/>
+
+  <defs>
+    <clipPath id="staffClip">
+      <rect x="20" y="24" width="580" height="200" rx="8"/>
+    </clipPath>
+    <clipPath id="clientClip">
+      <rect x="20" y="260" width="580" height="210" rx="8"/>
+    </clipPath>
+  </defs>
+
+  <!-- ═══════════════════ STAFF PAGE ═══════════════════ -->
+  <text x="20" y="15" font-size="11" font-weight="700" letter-spacing="2" fill="#94a3b8">STAFF PAGE</text>
+
+  <!-- Header fill -->
+  <rect x="20" y="24" width="580" height="50" fill="#dde3ec" clip-path="url(#staffClip)"/>
+  <!-- Sidebar fill -->
+  <rect x="20" y="74" width="150" height="150" fill="#e8edf2" clip-path="url(#staffClip)"/>
+
+  <!-- Outer container border -->
+  <rect x="20" y="24" width="580" height="200" rx="8" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- Dividers -->
+  <line x1="20"  y1="74"  x2="600" y2="74"  stroke="#94a3b8" stroke-width="1"/>
+  <line x1="170" y1="74"  x2="170" y2="224" stroke="#94a3b8" stroke-width="1"/>
+
+  <!-- ── HEADER labels ── -->
+  <text x="310" y="50" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">Header</text>
+  <text x="310" y="64" text-anchor="middle" font-size="10"                   fill="#64748b">page title · primary actions</text>
+
+  <!-- ── SIDEBAR labels ── -->
+  <text x="95" y="104" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">Sidebar</text>
+  <!-- nav item sketches -->
+  <rect x="34" y="112" width="102" height="7" rx="2" fill="#b0bec8"/>
+  <rect x="34" y="125" width="102" height="7" rx="2" fill="#93c5fd"/>
+  <rect x="34" y="138" width="88"  height="7" rx="2" fill="#b0bec8"/>
+  <rect x="34" y="151" width="94"  height="7" rx="2" fill="#b0bec8"/>
+  <rect x="34" y="164" width="76"  height="7" rx="2" fill="#b0bec8"/>
+  <text x="95" y="210" text-anchor="middle" font-size="9" fill="#94a3b8">navigation · active route</text>
+
+  <!-- ── MAIN CONTENT labels ── -->
+  <text x="385" y="104" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">Main Content</text>
+  <!-- table mockup -->
+  <rect x="182" y="112" width="400" height="88" rx="4" fill="#f8fafc" stroke="#dde3ec" stroke-width="1"/>
+  <rect x="182" y="112" width="400" height="18" rx="4" fill="#e8edf2"/>
+  <rect x="182" y="126" width="400" height="4"  fill="#e8edf2"/>
+  <rect x="192" y="116" width="56"  height="5"  rx="1" fill="#94a3b8"/>
+  <rect x="272" y="116" width="72"  height="5"  rx="1" fill="#94a3b8"/>
+  <rect x="376" y="116" width="56"  height="5"  rx="1" fill="#94a3b8"/>
+  <line x1="182" y1="143" x2="582" y2="143" stroke="#e8edf2" stroke-width="1"/>
+  <line x1="182" y1="158" x2="582" y2="158" stroke="#e8edf2" stroke-width="1"/>
+  <line x1="182" y1="173" x2="582" y2="173" stroke="#e8edf2" stroke-width="1"/>
+  <rect x="192" y="136" width="64"  height="5"  rx="1" fill="#dde3ec"/>
+  <rect x="272" y="136" width="80"  height="5"  rx="1" fill="#dde3ec"/>
+  <rect x="192" y="151" width="48"  height="5"  rx="1" fill="#dde3ec"/>
+  <rect x="272" y="151" width="96"  height="5"  rx="1" fill="#dde3ec"/>
+  <rect x="192" y="166" width="72"  height="5"  rx="1" fill="#dde3ec"/>
+  <rect x="272" y="166" width="64"  height="5"  rx="1" fill="#dde3ec"/>
+  <text x="385" y="212" text-anchor="middle" font-size="9" fill="#94a3b8">cards · tables · forms</text>
+
+
+  <!-- ═══════════════════ CLIENT PAGE ═══════════════════ -->
+  <text x="20" y="252" font-size="11" font-weight="700" letter-spacing="2" fill="#94a3b8">CLIENT PAGE</text>
+
+  <!-- Top bar fill -->
+  <rect x="20" y="260" width="580" height="50" fill="#dde3ec" clip-path="url(#clientClip)"/>
+
+  <!-- Outer container border -->
+  <rect x="20" y="260" width="580" height="210" rx="8" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+
+  <!-- Top bar divider -->
+  <line x1="20" y1="310" x2="600" y2="310" stroke="#94a3b8" stroke-width="1"/>
+
+  <!-- Logo placeholder -->
+  <rect x="34" y="273" width="52" height="22" rx="3" fill="#c7d2fe"/>
+  <text x="60" y="288" text-anchor="middle" font-size="9" font-weight="700" fill="#4338ca">LOGO</text>
+
+  <!-- User avatar -->
+  <circle cx="578" cy="284" r="11" fill="#c7d2fe"/>
+  <text x="578" y="288" text-anchor="middle" font-size="9" font-weight="600" fill="#4338ca">JD</text>
+
+  <!-- ── TOP BAR labels ── -->
+  <text x="310" y="281" text-anchor="middle" font-size="12" font-weight="600" fill="#334155">Top Bar</text>
+  <text x="310" y="296" text-anchor="middle" font-size="10"                   fill="#64748b">logo · case name · user menu</text>
+
+  <!-- Progress bar -->
+  <text x="60" y="327" font-size="9" fill="#94a3b8">progress</text>
+  <rect x="60" y="331" width="480" height="8" rx="4" fill="#e2e8f0"/>
+  <rect x="60" y="331" width="196" height="8" rx="4" fill="#93c5fd"/>
+
+  <!-- ── SCROLLABLE CONTENT label ── -->
+  <text x="310" y="360" text-anchor="middle" font-size="11" font-weight="600" fill="#334155">Scrollable Content</text>
+
+  <!-- Section card 1 -->
+  <rect x="60" y="368" width="242" height="72" rx="4" fill="#f8fafc" stroke="#dde3ec" stroke-width="1"/>
+  <rect x="60" y="368" width="242" height="18" rx="4" fill="#e8edf2"/>
+  <rect x="60" y="382" width="242" height="4"  fill="#e8edf2"/>
+  <rect x="72" y="371" width="80"  height="5"  rx="1" fill="#94a3b8"/>
+  <rect x="72" y="396" width="100" height="6"  rx="1" fill="#dde3ec"/>
+  <rect x="72" y="408" width="140" height="6"  rx="1" fill="#dde3ec"/>
+  <rect x="72" y="420" width="80"  height="6"  rx="1" fill="#dde3ec"/>
+  <text x="181" y="452" text-anchor="middle" font-size="9" fill="#94a3b8">intake section</text>
+
+  <!-- Section card 2 -->
+  <rect x="318" y="368" width="242" height="72" rx="4" fill="#f8fafc" stroke="#dde3ec" stroke-width="1"/>
+  <rect x="318" y="368" width="242" height="18" rx="4" fill="#e8edf2"/>
+  <rect x="318" y="382" width="242" height="4"  fill="#e8edf2"/>
+  <rect x="330" y="371" width="96"  height="5"  rx="1" fill="#94a3b8"/>
+  <rect x="330" y="396" width="100" height="6"  rx="1" fill="#dde3ec"/>
+  <rect x="330" y="408" width="140" height="6"  rx="1" fill="#dde3ec"/>
+  <rect x="330" y="420" width="80"  height="6"  rx="1" fill="#dde3ec"/>
+  <text x="439" y="452" text-anchor="middle" font-size="9" fill="#94a3b8">document section</text>
+
+</svg>

@@ -26,12 +26,16 @@ Focus on end-to-end functionality before UI polish. The product should be able t
 - Staff: email + password, scoped to their law firm
 - All routes protected by auth middleware that attaches `req.user`
 
+> Current implementation details (role table, middleware, route access control): see [architecture.md](architecture.md#roles--auth).
+
 ## Data Model Evolution
 The prototype had a single `forms` table with no users. The new model:
 - `forms` table → `questionnaires` table, linked to a `case_id`
 - Questionnaire data structure (27 sections, 150+ fields) is preserved — it maps directly to the paper BK questionnaire PDF
 - Each case has one questionnaire, many documents, many extraction results
 - The existing questionnaire components survive mostly unchanged — they just live inside a case context now instead of being standalone
+
+> Current schema (canonical): [server/src/db/schema.ts](../../server/src/db/schema.ts). Data model diagram: see [architecture.md](architecture.md#multi-tenant-data-model).
 
 ## Storage
 - Two stores: Blob (original files + generated PDFs) + PostgreSQL with JSONB (everything else)
@@ -61,3 +65,5 @@ All external dependencies accessed through interfaces so implementations can be 
 - `INotificationService` — in-app polling / email
 - `IVirusScanner` — ClamAV / cloud scanning
 - `IKeyVault` — Azure Key Vault / AWS KMS / HashiCorp Vault
+
+> Interface list is also summarized in [architecture.md](architecture.md#key-patterns) under Key Patterns.

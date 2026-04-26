@@ -1,6 +1,8 @@
 # Model Selection Guide
 
-Use this document to decide which AI model to use for a given agent task. Default to **Claude Sonnet 4** when in doubt.
+> **Source of truth** for AI model selection across all agents and task types. When any doc or agent file references a model, it should defer to this document.
+
+Default to **Claude Sonnet 4** when in doubt.
 
 ## Quick Reference
 

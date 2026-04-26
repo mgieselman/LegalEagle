@@ -1,5 +1,10 @@
 # UI Validation Plan
 
+> **Owner:** Engineering  
+> **Last reviewed:** 2026-04-25  
+> **Status:** Active — run after any UI changes  
+> **Related:** [ui-patterns.md](ui-patterns.md) (component rules), [ui-requirements.md](ui-requirements.md) (behavior specs)
+
 End-to-end validation sequence for the LegalEagle frontend. Run this after any UI changes to verify views render correctly.
 
 ## Browser Tooling

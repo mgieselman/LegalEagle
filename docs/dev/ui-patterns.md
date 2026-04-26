@@ -1,14 +1,17 @@
 # UI Patterns & Style Guide
 
-Reference for maintaining visual consistency across the LegalEagle frontend. Read this before building or modifying any UI component.
+> **Source of truth** for all frontend visual conventions: components, layout, typography, spacing, colors, tables, forms, and responsive rules. For routes and role access see [architecture.md](architecture.md). For behavior specs see [ui-requirements.md](ui-requirements.md).
 
-## Tech Stack
+Read this before building or modifying any UI component.
 
-- **React 19** + TypeScript
+## UI Tech Stack
+
 - **Tailwind CSS 4** (utility-first, no CSS modules)
 - **Lucide React** (icons)
 - **CVA** (class-variance-authority) for component variants
 - **`cn()` helper** from `@/lib/utils` — merges Tailwind classes safely. Use for all conditional/merged class strings.
+
+> Full stack (React 19, Express 5, Drizzle ORM, etc.): see [architecture.md](architecture.md#tech-stack).
 
 ## Shared Components
 
@@ -64,6 +67,18 @@ Exceptions:
 ### Client layout
 - Top bar with logo left, user/signout right
 - Content below: `flex-1 overflow-auto`
+
+### Labeled page wireframes
+
+Use these diagrams as a quick reference when implementing or reviewing page structure.
+
+![UI Page Wireframes](ui-wireframes.svg)
+
+Common labels:
+- Sidebar: route navigation (staff desktop) or drawer (mobile)
+- Header/Top Bar: page identity + primary actions
+- Main Content: feature-specific UI (tables, cards, forms)
+- Footer area (optional): secondary actions or metadata
 
 ---
 

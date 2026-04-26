@@ -1,5 +1,9 @@
 # Extraction Component Requirements
 
+> **Source of truth** for per-document-class field schemas and extraction behavioral rules. For pipeline architecture and confidence thresholds see [extraction.md](extraction.md).
+>
+> **Phase-2 split planned:** This document may be split into per-document-class schema files when the number of supported classes grows beyond ~15. Until then, all schemas stay here.
+
 ## Purpose
 
 The extraction component receives a document (as pre-extracted text) and a document class, and returns structured JSON of the fields present in that document. It is deterministic, stateless, and has no DB or network dependencies — it takes text in and returns data out.

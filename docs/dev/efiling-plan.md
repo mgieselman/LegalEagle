@@ -1,8 +1,11 @@
 # E-Filing & Court Intelligence — Implementation Plan
 
 **Feature area:** PACER/CM/ECF e-filing, docket monitoring, court notices, calendar integration  
-**Status:** Planning  
-**Priority:** P1 — Required for end-to-end workflow (both competitors have it)
+**Status:** Planning — not yet started  
+**Priority:** P1 — Required for end-to-end workflow (both competitors have it)  
+**Owner:** Engineering  
+**Last reviewed:** 2026-04-25  
+**Related:** [architecture.md](architecture.md), [competitive-matrix.md](competitive-matrix.md) (e-filing comparison)
 
 ---
 

@@ -1,5 +1,17 @@
 # UI Requirements
 
+> For styling, components, and Tailwind conventions see [ui-patterns.md](ui-patterns.md) — that is the **source of truth** for all visual rules. This document covers behavior, flows, and per-view capability matrix only.
+
+## Quick Reference
+
+- **Purpose:** Per-view behavior specs, user flows, role-based access matrix
+- **Component conventions:** See [ui-patterns.md](ui-patterns.md)
+- **Routes / page structure:** See [architecture.md](architecture.md)
+- **Validation sequence:** See [ui-validation-plan.md](ui-validation-plan.md)
+- **Roles:** client, paralegal, attorney, admin — defined in [architecture.md](architecture.md#roles--auth)
+
+---
+
 ## Views
 
 | View | Route | Client | Paralegal | Attorney | Admin |

@@ -1,5 +1,19 @@
 # LegalEagle Architecture
 
+> **Source of truth** for system design, roles, routes, and API access control. For UI conventions see [ui-patterns.md](ui-patterns.md). For model selection see [model-selection.md](model-selection.md).
+
+## Quick Reference
+
+- **Purpose:** System design, tech stack, roles, routes, API access control
+- **Client:** React 19 + Vite, Tailwind CSS, shadcn/ui, React Router
+- **Server:** Express 5 + TypeScript, Drizzle ORM, SQLite (dev) / PostgreSQL (prod)
+- **Extraction service:** Python FastAPI (`extractor/`), Rule → Azure DI → Claude chain
+- **AI model:** `claude-sonnet-4-20250514` — see [model-selection.md](model-selection.md) for guidance
+- **Dev ports:** Server `:3001`, Client `:3002`, Extractor `:8321`
+- **Key files:** [server/src/db/schema.ts](../../server/src/db/schema.ts), [server/src/index.ts](../../server/src/index.ts), [client/src/router.tsx](../../client/src/router.tsx)
+
+---
+
 ## Overview
 LegalEagle is a multi-tenant web app for law firms handling consumer bankruptcy. It digitizes client intake (questionnaire + document upload), performs AI-powered fraud/inconsistency review, automates the means test, and generates official bankruptcy petition forms.
 

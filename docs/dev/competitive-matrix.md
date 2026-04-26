@@ -1,5 +1,7 @@
 # Competitive Feature Matrix
 
+> **Source of truth** for feature-by-feature comparisons against Jubilee Pro and Glade.ai. For the LegalEagle feature roadmap (MVP scope + post-MVP backlog) see [legal-eagle-features.md](../domain/legal-eagle-features.md).
+
 **LegalEagle vs. Jubilee Pro vs. Glade.ai**
 *Last updated: 2026-04-11*
 

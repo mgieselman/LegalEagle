@@ -1,5 +1,10 @@
 # Questionnaire Requirements Review — 2026-04-18
 
+> **Status:** Point-in-time review — items below are open backlog tasks, not current state.  
+> **Owner:** Matt (implementation), Richard (legal sign-off on open questions)  
+> **Action required:** Attorney answers needed for the open questions at the bottom before implementation can proceed.  
+> **Archive when:** All items resolved and questionnaire types updated.
+
 Review of Richard's feedback on the questionnaire. Each item is classified as **NEW**, **EXISTING (modify)**, or **EXISTING (remove)**, with file references and a description of the gap.
 
 ---
